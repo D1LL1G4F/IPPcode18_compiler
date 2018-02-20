@@ -1,9 +1,5 @@
 <?php
 
-  class Token {
-
-  }
-
   $instructOp = array(
     "move" => array(2,"var","symb"),
     "createframe" => array(0),
@@ -43,6 +39,8 @@
   );
 
   $lineCnt = 0;
+  $instructOrder = 0;
+  $xmlOutput = new DomDocument("1.0", "UTF-8");
 
  function removeComments($str) {
    if (strstr($str, '#', true) === FALSE) {
@@ -54,11 +52,12 @@
  }
 
   function loadInstruct() {
-    $instruction = fgets(STDIN); // get line
-    global $lineCnt;
-    $lineCnt++;
-    $instruction = removeComments($instruction);
-    if (strcmp("\n",$instruction) == 0) loadInstruct();
+    do {
+      $instruction = fgets(STDIN); // get line
+      global $lineCnt;
+      $lineCnt++;
+      $instruction = removeComments($instruction);
+    } while(strcmp("\n",$instruction) == 0); // repeat if there is empty instruct
     return $instruction;
   }
 
@@ -67,22 +66,41 @@
 
     if ($header) {
       $header = preg_replace('/\s+/', '', $header); // remove whitespaces
-      echo "-" . $header . "-\n";
-      return strcmp(".IPPcode18",$header) ? false : true;
+      return strcmp(".ippcode18",strtolower($header)) ? false : true;
     } else {
       return false;
     }
   }
 
+  function parseInstruct($part) {
+    return true;
+  }
+
+
+
   if (checkValidHeader()) {
-    while(loadInstruct()) {
-      echo "OK\n";
+    $program = $xmlOutput->createElement("program");
+    $xmlOutput->appendChild($program);
+    while($instruct = loadInstruct()) {
+      $instructOrder++;
+      $instructPart = preg_split('/\s+/', $instruct, -1, PREG_SPLIT_NO_EMPTY); // split instruct by whitespaces to array
+
+      $instructElem = $xmlOutput->createElement("instruction");
+      $instructElem->setAttribute("order",$instructOrder);
+      $instructElem->setAttribute("opcode",strtoupper($instructPart[0]));
+      $program->appendChild($instructElem);
+
+      if (!parseInstruct($instructPart)) {
+        fwrite(STDERR, "ERROR 21: semantic/lexical error on line: " . $lineCnt . "\n");
+        return 21;
+      }
     }
   } else {
     fwrite(STDERR, "ERROR 21: semantic/lexical error on line: " . $lineCnt . " (invalid header)" . "\n");
     return 21;
   }
-
+  $xmlOutput->formatOutput = true;
+  print $xmlOutput->saveXML();
   return 0;
 
  ?>
