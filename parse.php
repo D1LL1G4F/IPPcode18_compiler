@@ -72,7 +72,32 @@
     }
   }
 
+  //TODO istype,validvaluecheck
+  function isInt($str) {
+    if (substr_count($str,"@") == 1) {
+        $part = explode('@',$str,-1);
+        if ($part[0] != "int") {
+          return false;
+        }
+
+    } else {
+      return false;
+    }
+    return true;
+  }
+
   function parseInstruct($part) {
+    global $instructOp;
+    $opcode = strtolower($part[0]); // opcode in small caps
+    if (!array_key_exists($opcode,$instructOp)) { // check valid OP code
+      return false;
+    }
+    if ($instructOp[$opcode][0] != (count($part)-1)) { // check if there is valid number of arguments
+      return false;
+    }
+
+
+
     return true;
   }
 
@@ -82,6 +107,7 @@
     $program = $xmlOutput->createElement("program");
     $xmlOutput->appendChild($program);
     while($instruct = loadInstruct()) {
+
       $instructOrder++;
       $instructPart = preg_split('/\s+/', $instruct, -1, PREG_SPLIT_NO_EMPTY); // split instruct by whitespaces to array
 

@@ -3,7 +3,7 @@
 DEFVAR GF@counter
 MOVE GF@counter string@ # Inicializace prom ěnné na prá zdný řetě zec
 # Jednoduch á iterace , dokud nebude spln ěna zadan á podm í nka
-LABEL while
+LABEl while
 JUMPIFEQ end GF@counter string@aaa
 WRITE string@counter\032obsahuje\032
 WRITE GF@counter
