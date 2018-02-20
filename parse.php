@@ -72,9 +72,49 @@
     }
   }
 
-  //TODO istype,validvaluecheck
-  function isInt($str) {
-    if (substr_count($str,"@") == 1) {
+
+  function validValue($str,$type) {
+
+  }
+
+  function isType($str) {
+
+  }
+
+  /// $str = instruction argument
+  /// $type = var/symb/label/type
+  /// $parentElem = xml elem of instruction
+  function validArgument($str,$type,$parentElem,$numOfArg) {
+    switch ($type) {
+      case "symb": // if not a constant should fallthrough and check if not var
+        // check if symb
+        if (substr_count($str,"@") == 1) {
+            $part = explode('@',$str,-1);
+            if (isType($part[0])) {
+              if (validValue($part[1])) {
+                $argElem = $xmlOutput->createElement("arg" . $numOfArg,$part[1]);
+                $argElem->setAttribute("type",$part[0]);
+                $parentElem->appendChild($argElem);
+                return true;
+              } else {
+                return false; // return error if it is meant to be a constant but with wrong value
+              }
+            }
+        }
+      case "var":
+        //check if var
+        break;
+      case "label":
+        // check if label
+        break;
+      case "type":
+        // check if type
+        break;
+      default:
+        return false;
+        break;
+    }
+    /*if (substr_count($str,"@") == 1) {
         $part = explode('@',$str,-1);
         if ($part[0] != "int") {
           return false;
@@ -82,21 +122,29 @@
 
     } else {
       return false;
-    }
+    }*/
+
     return true;
   }
 
-  function parseInstruct($part) {
+  function parseInstruct($part,$instructElem) {
     global $instructOp;
     $opcode = strtolower($part[0]); // opcode in small caps
     if (!array_key_exists($opcode,$instructOp)) { // check valid OP code
       return false;
     }
-    if ($instructOp[$opcode][0] != (count($part)-1)) { // check if there is valid number of arguments
+    $numOfInstructArg = $instructOp[$opcode][0];
+
+    if ($numOfInstructArg != (count($part)-1)) { // check if there is valid number of arguments
       return false;
     }
 
-
+    // analyze each argument
+    for ($i=0; $i < $numOfInstructArg; $i++) {
+      if(!validArgument($part[i+1]),$instructOp[$opcode][i+1],$instructElem,$i+1) {
+        return false;
+      }
+    }
 
     return true;
   }
@@ -116,7 +164,7 @@
       $instructElem->setAttribute("opcode",strtoupper($instructPart[0]));
       $program->appendChild($instructElem);
 
-      if (!parseInstruct($instructPart)) {
+      if (!parseInstruct($instructPart,$instructElem)) {
         fwrite(STDERR, "ERROR 21: semantic/lexical error on line: " . $lineCnt . "\n");
         return 21;
       }
