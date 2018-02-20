@@ -74,16 +74,43 @@
 
 
   function validValue($str,$type) {
-
+    switch ($type) {
+      case "int":
+        // TODO
+        break;
+      case "bool":
+        // TODO
+        break;
+      case "string":
+        // TODO
+        break;
+      default:
+        return false; // should never occur (at least I hope so)
+        break;
+    }
   }
 
   function isType($str) {
-
+    switch ($str) {
+      case "int":
+        return true;
+        break;
+      case "bool":
+        return true;
+        break;
+      case "string":
+        return true;
+        break;
+      default:
+        return false;
+        break;
+    }
   }
 
   /// $str = instruction argument
   /// $type = var/symb/label/type
   /// $parentElem = xml elem of instruction
+  /// $numOfArg = number of argument in instruction
   function validArgument($str,$type,$parentElem,$numOfArg) {
     switch ($type) {
       case "symb": // if not a constant should fallthrough and check if not var
@@ -127,6 +154,7 @@
     return true;
   }
 
+  // returns true on success!!
   function parseInstruct($part,$instructElem) {
     global $instructOp;
     $opcode = strtolower($part[0]); // opcode in small caps
