@@ -76,15 +76,36 @@
   function validValue($str,$type) {
     switch ($type) {
       case "int":
-        // TODO
+        if (preg_match("(^(\+?\d+$|-?\d+$))",$str)) {
+          return true;
+        } else {
+          return false;
+        }
         break;
       case "bool":
-        // TODO
+        if ($str == "true" || $str == "false") {
+          return true;
+        } else {
+          return false;
+        }
         break;
       case "string":
-        // TODO
+        if (preg_match_all("(\/\d{3})",$str) == substr_count($str,"/")) { // checks if escape sequences are in valid format
+          if (preg_match('!!u', $str)) { // check correct encoding UTF-8 of string
+             // this is utf-8
+             return true;
+          }
+          else {
+             // definitely not utf-8
+             return false;
+          }
+          return true;
+        } else {
+          return false;
+        }
         break;
       default:
+        fwrite(STDERR, "INTERNAL ERROR: function validValue() called with wrong type param\n");
         return false; // should never occur (at least I hope so)
         break;
     }

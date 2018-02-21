@@ -2,7 +2,8 @@
 #123adsa
 DEFVAR GF@counter
 MOVE GF@counter string@ # Inicializace prom ěnné na prá zdný řetě zec
-# Jednoduch á iterace , dokud nebude spln ěna zadan á podm í nka
+# Jednoduch á iterace , dokud nebude spln ěna zadan á podm í nka7
+#test: int variable values(+12,-12,123,1+23), consatnts param, 
 LABEl while
 JUMPIFEQ end GF@counter string@aaa
 WRITE string@counter\032obsahuje\032
