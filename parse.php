@@ -76,7 +76,7 @@
   function validValue($str,$type) {
     switch ($type) {
       case "int":
-        if (preg_match("(^(\+?\d+$|-?\d+$))",$str)) {
+        if (preg_match("/(^(\+?\d+$|-?\d+$))/",$str)) {
           return true;
         } else {
           return false;
@@ -130,7 +130,7 @@
 
   function validID($str) {
     $specialChars = array("_","-","$","&","%","*");
-    if (preg_match("^\D.*",$str)) { // check if starts with non digit char
+    if (preg_match("/^\D.*/",$str)) { // check if starts with non digit char
       $strWithoutSC = str_replace($specialChars,"",$str);
       return ctype_alnum($strWithoutSC); // check if remaining str contain only alphanumeric chars
     } else {
@@ -143,16 +143,17 @@
   /// $parentElem = xml elem of instruction
   /// $numOfArg = number of argument in instruction
   function validArgument($str,$type,$parentElem,$numOfArg) {
+    global $xmlOutput;
     switch ($type) {
       case "symb": // if not a constant should fallthrough and check if not var
         // check if symb
         if (substr_count($str,"@") == 1) {
-            $part = explode('@',$str,-1);
+            $part = explode('@',$str);
             if (count($part) != 2) { // check proper type@value
               return false;
             }
             if (isType($part[0])) {
-              if (validValue($part[1])) {
+              if (validValue($part[1],$part[0])) {
                 $argElem = $xmlOutput->createElement("arg" . $numOfArg,$part[1]);
                 $argElem->setAttribute("type",$part[0]);
                 $parentElem->appendChild($argElem);
@@ -165,7 +166,7 @@
       case "var":
         //check if var
         if (substr_count($str,"@") == 1) {
-            $part = explode('@',$str,-1);
+            $part = explode('@',$str);
             if (count($part) != 2) { // check proper frame@ID
               return false;
             }
@@ -188,7 +189,9 @@
       case "label":
         // check if label
         if (validID($str)) {
-          
+          $argElem = $xmlOutput->createElement("arg" . $numOfArg,$str);
+          $argElem->setAttribute("type","label");
+          $parentElem->appendChild($argElem);
           return true;
         } else {
           return false;
@@ -196,20 +199,19 @@
         break;
       case "type":
         // check if type
+        if (isType($str)) {
+          $argElem = $xmlOutput->createElement("arg" . $numOfArg,$str);
+          $argElem->setAttribute("type","type");
+          $parentElem->appendChild($argElem);
+          return true;
+        } else {
+          return false;
+        }
         break;
       default:
         return false;
         break;
     }
-    /*if (substr_count($str,"@") == 1) {
-        $part = explode('@',$str,-1);
-        if ($part[0] != "int") {
-          return false;
-        }
-
-    } else {
-      return false;
-    }*/
 
     return true;
   }
@@ -229,7 +231,7 @@
 
     // analyze each argument
     for ($i=0; $i < $numOfInstructArg; $i++) {
-      if(!validArgument($part[i+1]),$instructOp[$opcode][i+1],$instructElem,$i+1) {
+      if(!validArgument($part[$i+1],$instructOp[$opcode][$i+1],$instructElem,$i + 1)) {
         return false;
       }
     }
