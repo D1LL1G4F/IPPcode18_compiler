@@ -128,6 +128,16 @@
     }
   }
 
+  function validID($str) {
+    $specialChars = array("_","-","$","&","%","*");
+    if (preg_match("^\D.*",$str)) { // check if starts with non digit char
+      $strWithoutSC = str_replace($specialChars,"",$str);
+      return ctype_alnum($strWithoutSC); // check if remaining str contain only alphanumeric chars
+    } else {
+      return false;
+    }
+  }
+
   /// $str = instruction argument
   /// $type = var/symb/label/type
   /// $parentElem = xml elem of instruction
@@ -138,6 +148,9 @@
         // check if symb
         if (substr_count($str,"@") == 1) {
             $part = explode('@',$str,-1);
+            if (count($part) != 2) { // check proper type@value
+              return false;
+            }
             if (isType($part[0])) {
               if (validValue($part[1])) {
                 $argElem = $xmlOutput->createElement("arg" . $numOfArg,$part[1]);
@@ -151,9 +164,35 @@
         }
       case "var":
         //check if var
+        if (substr_count($str,"@") == 1) {
+            $part = explode('@',$str,-1);
+            if (count($part) != 2) { // check proper frame@ID
+              return false;
+            }
+            if ($part[0] == "GF" || $part[0] == "LF" || $part[0] == "TF") {
+              if (validID($part[1])) {
+                $argElem = $xmlOutput->createElement("arg" . $numOfArg,$str);
+                $argElem->setAttribute("type","var");
+                $parentElem->appendChild($argElem);
+                return true;
+              } else {
+                return false;
+              }
+            } else {
+              return false;
+            }
+        } else {
+          return false;
+        }
         break;
       case "label":
         // check if label
+        if (validID($str)) {
+          
+          return true;
+        } else {
+          return false;
+        }
         break;
       case "type":
         // check if type
