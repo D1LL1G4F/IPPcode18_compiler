@@ -138,10 +138,12 @@
     }
   }
 
+
+
   /// $str = instruction argument
   /// $type = var/symb/label/type
   /// $parentElem = xml elem of instruction
-  /// $numOfArg = number of argument in instruction
+  /// $numOfArg = number of argument in instruction based on order
   function validArgument($str,$type,$parentElem,$numOfArg) {
     global $xmlOutput;
     switch ($type) {
@@ -152,10 +154,17 @@
             if (count($part) != 2) { // check proper type@value
               return false;
             }
-            if (isType($part[0])) {
-              if (validValue($part[1],$part[0])) {
-                $argElem = $xmlOutput->createElement("arg" . $numOfArg,$part[1]);
-                $argElem->setAttribute("type",$part[0]);
+
+            $val = $part[1];
+            $valType = $part[0];
+
+            if (isType($valType)) {
+              if (validValue($val,$valType)) {
+
+                $val = htmlspecialchars($val);
+
+                $argElem = $xmlOutput->createElement("arg" . $numOfArg,$val);
+                $argElem->setAttribute("type",$valType);
                 $parentElem->appendChild($argElem);
                 return true;
               } else {
@@ -170,9 +179,16 @@
             if (count($part) != 2) { // check proper frame@ID
               return false;
             }
-            if ($part[0] == "GF" || $part[0] == "LF" || $part[0] == "TF") {
-              if (validID($part[1])) {
-                $argElem = $xmlOutput->createElement("arg" . $numOfArg,$str);
+
+            $frame = $part[0];
+            $id = $part[1];
+
+            if ($frame == "GF" || $frame == "LF" || $frame == "TF") {
+              if (validID($id)) {
+
+                $var = htmlspecialchars($str);
+
+                $argElem = $xmlOutput->createElement("arg" . $numOfArg,$var);
                 $argElem->setAttribute("type","var");
                 $parentElem->appendChild($argElem);
                 return true;
