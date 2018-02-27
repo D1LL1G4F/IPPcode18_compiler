@@ -279,6 +279,9 @@
     fwrite(STDERR, "ERROR 21: semantic/lexical error on line: " . $lineCnt . " (invalid header)" . "\n");
     return 21;
   }
+
+  $options = getopt("", array("stats=:","commnets","loc"));
+
   $xmlOutput->formatOutput = true;
   print $xmlOutput->saveXML();
   return 0;
