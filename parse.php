@@ -1,9 +1,13 @@
 <?php
 
   /// LOAD ARGUMENTS ///
-  $options = getopt("", array("stats=:","comments","loc","help"));
+  $options = getopt("", array("stats:","comments","loc","help"));
   /// CHECK IF HELP NEEDET ///
-  if ((count($options) == 1) $$ array_key_exists("help",$options)) {
+  if (array_key_exists("help",$options)) {
+    if (count($options) != 1) {
+      fwrite(STDERR, " ERROR 10: invalid combination of arguments, for more info see: --help\n");
+      return 10;
+    }
     fwrite(STDOUT, "
 
     author: Matej Knazik\n
@@ -64,11 +68,12 @@
   $xmlOutput = new DomDocument("1.0", "UTF-8");
 
  function removeComments($str) {
+   global $commentCnt;
    if (strstr($str, '#', true) === FALSE) {
      return $str;
    } else {
      $str = strstr($str, '#', true) . "\n";
-     global $commentCnt++;
+     $commentCnt++;
      return $str;
    }
  }
@@ -307,8 +312,8 @@
 
   /// GETOPTS PARSER ///
   $file = false;
-  if (array_key_exists("stats=",$options)) {
-    $file = fopen($options["stats="], "w");
+  if (array_key_exists("stats",$options)) {
+    $file = fopen($options["stats"], "w");
     if ($file == false) {
       fwrite(STDERR, "ERROR 99: failed in opening file:" . $file . "\n");
       return 99;
@@ -318,7 +323,7 @@
   foreach ($options as $opt => $optVal) {
 
     switch ($opt) {
-      case "stats=":
+      case "stats":
         break;
       case "comments":
         if(fwrite($file,$commentCnt . "\n") == false) {
@@ -338,6 +343,7 @@
         break;
     }
   }
+  fclose($file);
   /// END OF GETOPTS PARSER ////
 
   $xmlOutput->formatOutput = true;
