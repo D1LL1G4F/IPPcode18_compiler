@@ -1,5 +1,25 @@
 <?php
 
+  /// LOAD ARGUMENTS ///
+  $options = getopt("", array("stats=:","comments","loc","help"));
+  /// CHECK IF HELP NEEDET ///
+  if ((count($options) == 1) $$ array_key_exists("help",$options)) {
+    fwrite(STDOUT, "
+
+    author: Matej Knazik\n
+    description: IPPcode18 to formatted XML parser\n\n
+    arguments:\n
+    --help       : shows brief manual to parse.php file (cannot be combined with other arguments)\n
+    --stats=FILE : set output FILE for statistics\n
+    --comments   : number of lines with comments will be written in FILE with statiscs (must be combined with --stats arg)\n
+    --loc        : number of lines with instruction will be written in FILE with statistics (must be combined with --stats arg)\n
+
+    ");
+    return 0;
+  }
+  ////////////////////////////
+
+  // table for instruction parsing
   $instructOp = array(
     "move" => array(2,"var","symb"),
     "createframe" => array(0),
@@ -40,6 +60,7 @@
 
   $lineCnt = 0;
   $instructOrder = 0;
+  $commentCnt = 0;
   $xmlOutput = new DomDocument("1.0", "UTF-8");
 
  function removeComments($str) {
@@ -47,6 +68,7 @@
      return $str;
    } else {
      $str = strstr($str, '#', true) . "\n";
+     global $commentCnt++;
      return $str;
    }
  }
@@ -256,7 +278,9 @@
   }
 
 
-
+  /*
+  *  ///////////     MAIN PROGRAM       /////////////////
+  */
   if (checkValidHeader()) {
     $program = $xmlOutput->createElement("program");
     $xmlOutput->appendChild($program);
@@ -279,8 +303,42 @@
     fwrite(STDERR, "ERROR 21: semantic/lexical error on line: " . $lineCnt . " (invalid header)" . "\n");
     return 21;
   }
+  //////////////////////////////////////////////////////////
 
-  $options = getopt("", array("stats=:","commnets","loc"));
+  /// GETOPTS PARSER ///
+  $file = false;
+  if (array_key_exists("stats=",$options)) {
+    $file = fopen($options["stats="], "w");
+    if ($file == false) {
+      fwrite(STDERR, "ERROR 99: failed in opening file:" . $file . "\n");
+      return 99;
+    }
+  }
+
+  foreach ($options as $opt => $optVal) {
+
+    switch ($opt) {
+      case "stats=":
+        break;
+      case "comments":
+        if(fwrite($file,$commentCnt . "\n") == false) {
+          fwrite(STDERR, " ERROR 10: missing \"stats=FILE\" argument\n");
+          return 10;
+        }
+        break;
+      case "loc":
+        if(fwrite($file,$instructOrder . "\n") == false) {
+          fwrite(STDERR, " ERROR 10: missing \"stats=FILE\" argument\n");
+          return 10;
+        }
+        break;
+      default:
+        fwrite(STDERR, " ERROR 10: invalid combination of arguments, for more info see: --help\n");
+        return 10;
+        break;
+    }
+  }
+  /// END OF GETOPTS PARSER ////
 
   $xmlOutput->formatOutput = true;
   print $xmlOutput->saveXML();
