@@ -44,7 +44,7 @@
     "eq" => array(3,"var","symb","symb"),
     "and" => array(3,"var","symb","symb"),
     "or" => array(3,"var","symb","symb"),
-    "not" => array(3,"var","symb","symb"),
+    "not" => array(2,"var","symb"),
     "int2char" => array(2,"var","symb"),
     "stri2int" => array(3,"var","symb","symb"),
     "read" => array(2,"var","type"),
@@ -84,7 +84,7 @@
       global $lineCnt;
       $lineCnt++;
       $instruction = removeComments($instruction);
-    } while(strcmp("\n",$instruction) == 0); // repeat if there is empty instruct
+    } while(ctype_space($instruction)); // repeat if there is empty instruct
     return $instruction;
   }
 
@@ -176,14 +176,26 @@
     switch ($type) {
       case "symb": // if not a constant should fallthrough and check if not var
         // check if symb
-        if (substr_count($str,"@") == 1) {
+        if (substr_count($str,"@") > 0) {
             $part = explode('@',$str);
+            $val = "";
+            $valType = "";
+
             if (count($part) != 2) { // check proper type@value
-              return false;
+              if ((count($part) > 2) && ($part[0] == "string")) { //string exception (string@string@lalala is valid)
+                $valType = $part[0];
+                $val = $part[1];
+                for ($i=2; $i < count($part) ; $i++) {
+                  $val = $val . "@" . $part[$i];
+                }
+              } else {
+                return false;
+              }
+            } else {
+              $val = $part[1];
+              $valType = $part[0];
             }
 
-            $val = $part[1];
-            $valType = $part[0];
 
             if (isType($valType)) {
               if (validValue($val,$valType)) {
@@ -232,7 +244,7 @@
       case "label":
         // check if label
         if (validID($str)) {
-          $argElem = $xmlOutput->createElement("arg" . $numOfArg,$str);
+          $argElem = $xmlOutput->createElement("arg" . $numOfArg,htmlspecialchars($str));
           $argElem->setAttribute("type","label");
           $parentElem->appendChild($argElem);
           return true;
@@ -288,6 +300,7 @@
   */
   if (checkValidHeader()) {
     $program = $xmlOutput->createElement("program");
+    $program->setAttribute("language","IPPcode18");
     $xmlOutput->appendChild($program);
     while($instruct = loadInstruct()) {
 
@@ -343,7 +356,10 @@
         break;
     }
   }
-  fclose($file);
+
+  if ($file != false) {
+    fclose($file);
+  }
   /// END OF GETOPTS PARSER ////
 
   $xmlOutput->formatOutput = true;
