@@ -1,12 +1,18 @@
 <?php
 
+  /*
+  * author: Matej Knazik
+  * login: xknazi00
+  *
+  */
+
   /// LOAD ARGUMENTS ///
   $options = getopt("", array("stats:","comments","loc","help"));
   /// CHECK IF HELP NEEDET ///
   if (array_key_exists("help",$options)) {
     if (count($options) != 1) {
       fwrite(STDERR, " ERROR 10: invalid combination of arguments, for more info see: --help\n");
-      return 10;
+      exit(10);
     }
     fwrite(STDOUT, "
 
@@ -19,7 +25,7 @@
     --loc        : number of lines with instruction will be written in FILE with statistics (must be combined with --stats arg)\n
 
     ");
-    return 0;
+    exit(0);
   }
   ////////////////////////////
 
@@ -314,12 +320,12 @@
 
       if (!parseInstruct($instructPart,$instructElem)) {
         fwrite(STDERR, "ERROR 21: semantic/lexical error on line: " . $lineCnt . "\n");
-        return 21;
+        exit(21);
       }
     }
   } else {
     fwrite(STDERR, "ERROR 21: semantic/lexical error on line: " . $lineCnt . " (invalid header)" . "\n");
-    return 21;
+    exit(21);
   }
   //////////////////////////////////////////////////////////
 
@@ -328,8 +334,8 @@
   if (array_key_exists("stats",$options)) {
     $file = fopen($options["stats"], "w");
     if ($file == false) {
-      fwrite(STDERR, "ERROR 99: failed in opening file:" . $file . "\n");
-      return 99;
+      fwrite(STDERR, "ERROR 10: failed in opening file:" . $file . "\n");
+      exit(10);
     }
   }
 
@@ -341,18 +347,18 @@
       case "comments":
         if(fwrite($file,$commentCnt . "\n") == false) {
           fwrite(STDERR, " ERROR 10: missing \"stats=FILE\" argument\n");
-          return 10;
+          exit(10);
         }
         break;
       case "loc":
         if(fwrite($file,$instructOrder . "\n") == false) {
           fwrite(STDERR, " ERROR 10: missing \"stats=FILE\" argument\n");
-          return 10;
+          exit(10);
         }
         break;
       default:
         fwrite(STDERR, " ERROR 10: invalid combination of arguments, for more info see: --help\n");
-        return 10;
+        exit(10);
         break;
     }
   }
@@ -364,6 +370,6 @@
 
   $xmlOutput->formatOutput = true;
   print $xmlOutput->saveXML();
-  return 0;
+  exit(0);
 
  ?>
