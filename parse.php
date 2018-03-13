@@ -163,9 +163,13 @@
 
   function validID($str) {
     $specialChars = array("_","-","$","&","%","*");
+    if (empty($str)) {
+      return false;
+    }
+
     if (preg_match("/^\D.*/",$str)) { // check if starts with non digit char
       $strWithoutSC = str_replace($specialChars,"",$str);
-      return ctype_alnum($strWithoutSC); // check if remaining str contain only alphanumeric chars
+      return (ctype_alnum($strWithoutSC) || empty($strWithoutSC)); // check if remaining str contain only alphanumeric chars
     } else {
       return false;
     }
