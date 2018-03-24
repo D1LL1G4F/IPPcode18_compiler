@@ -110,11 +110,216 @@ def lookUpInstuct(instructionNumber, program):
         return followingInstruction
 
 
+def parseMove(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseCreateframe(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parsePushframe(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parsePopframe(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseDefvar(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseCall(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseReturn(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parsePushs(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parsePops(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseAdd(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseSub(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseMul(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseIdiv(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseLt(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseGt(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseEq(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseAnd(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseOr(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseNot(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseInt2char(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseStri2int(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseRead(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseWrite(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseConcat(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseStrlen(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseGetchar(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseSetchar(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseType(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseLabel(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseJump(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseJumpifeq(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseJumpifneq(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseDprint(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
+def parseBreak(instruction):
+    instructOrderNum = int(instruction.attrib.get("order"))
+    print(instruction.attrib)
+    return instructOrderNum+1
+
+
 opcodeParser = {
      "MOVE": parseMove,
      "CREATEFRAME": parseCreateframe,
      "PUSHFRAME": parsePushframe,
      "POPFRAME": parsePopframe,
+     "DEFVAR": parseDefvar,
      "CALL": parseCall,
      "RETURN": parseReturn,
      "PUSHS": parsePushs,
@@ -125,17 +330,32 @@ opcodeParser = {
      "IDIV": parseIdiv,
      "LT": parseLt,
      "GT": parseGt,
-     "EQ": parseEQ,
+     "EQ": parseEq,
+     "AND": parseAnd,
+     "OR": parseOr,
+     "NOT": parseNot,
+     "INT2CHAR": parseInt2char,
+     "STRI2INT": parseStri2int,
+     "READ": parseRead,
+     "WRITE": parseWrite,
+     "CONCAT": parseConcat,
+     "STRLEN": parseStrlen,
+     "GETCHAR": parseGetchar,
+     "SETCHAR": parseSetchar,
+     "TYPE": parseType,
+     "LABEL": parseLabel,
+     "JUMP": parseJump,
+     "JUMPIFEQ": parseJumpifeq,
+     "JUMPIFNEQ": parseJumpifneq,
+     "DPRINT": parseDprint,
+     "BREAK": parseBreak,
 }
 
 
 def interpretInstruction(instruction):
-    # instructOrderNum = int(instruction.attrib.get("order"))
-    # print(instruction.attrib)
-    # return instructOrderNum+1
     opcode = instruction.attrib.get("opcode")
     if opcode in opcodeParser:
-        return opcodeParser[opcode]()
+        return opcodeParser[opcode](instruction)
     else:
         sys.stderr.write("ERROR 32: Unknown opcode \"{}\"\n".format(opcode))
         sys.exit(32)
