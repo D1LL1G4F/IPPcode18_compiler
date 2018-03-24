@@ -69,7 +69,7 @@ def checkProgramFormatting(program):
             order = int(instruction.attrib.get("order"))
         except Exception:
             sys.stderr.write("ERROR 31: Wrongly formatted XML file (invalid or"
-                             "der number in instruction)\n")
+                             " missing order number in instruction)\n")
             sys.exit(31)
         if (order < 0):
             sys.stderr.write("ERROR 31: Wrongly formatted XML file (order nu"
@@ -81,6 +81,13 @@ def checkProgramFormatting(program):
             sys.exit(31)
 
 
+# function for finding instruction with selected instructionNumber
+# arg1: instructionNumber -> order number of required instructionNumber
+# arg2: program -> root of tree containing endOfProgram
+# return val: if founded successfully returns instruction in case order number
+#             doesn't exist returns instruction with next higher order number
+#             and reports warning on stderr if there is no bigger order number
+#             returns None
 def lookUpInstuct(instructionNumber, program):
     endOfProgram = True
     followingInstructionNum = math.inf
@@ -103,10 +110,35 @@ def lookUpInstuct(instructionNumber, program):
         return followingInstruction
 
 
+opcodeParser = {
+     "MOVE": parseMove,
+     "CREATEFRAME": parseCreateframe,
+     "PUSHFRAME": parsePushframe,
+     "POPFRAME": parsePopframe,
+     "CALL": parseCall,
+     "RETURN": parseReturn,
+     "PUSHS": parsePushs,
+     "POPS": parsePops,
+     "ADD": parseAdd,
+     "SUB": parseSub,
+     "MUL": parseMul,
+     "IDIV": parseIdiv,
+     "LT": parseLt,
+     "GT": parseGt,
+     "EQ": parseEQ,
+}
+
+
 def interpretInstruction(instruction):
-    instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    # instructOrderNum = int(instruction.attrib.get("order"))
+    # print(instruction.attrib)
+    # return instructOrderNum+1
+    opcode = instruction.attrib.get("opcode")
+    if opcode in opcodeParser:
+        return opcodeParser[opcode]()
+    else:
+        sys.stderr.write("ERROR 32: Unknown opcode \"{}\"\n".format(opcode))
+        sys.exit(32)
 
 
 def main():
@@ -117,11 +149,11 @@ def main():
 
     checkProgramFormatting(program)  # check valid tags/args of prog and instr.
 
-    instructionNumber = 1  # start with first instruction
-    instruction = lookUpInstuct(instructionNumber, program)
+    nextInstructionNumber = 1  # start with first instruction
+    instruction = lookUpInstuct(nextInstructionNumber, program)
     while (instruction):
-        instructionNumber = interpretInstruction(instruction)
-        instruction = lookUpInstuct(instructionNumber, program)
+        nextInstructionNumber = interpretInstruction(instruction)
+        instruction = lookUpInstuct(nextInstructionNumber, program)
 
 
 if __name__ == '__main__':
