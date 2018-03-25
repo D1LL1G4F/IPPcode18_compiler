@@ -47,7 +47,11 @@ class Frame():
         self.defined = status
 
     def defVar(self, name):
-        self.variable[name] = None
+        if self.defined:
+            self.variable[name] = None
+        else:
+            sys.stderr.write("ERROR 55: accesing undefined frame\n")
+            sys.exit(55)
 
     def setVar(self, var):
         if var.name in self.variable:
@@ -70,10 +74,26 @@ class StackFrame():
     empty = None
 
     def __init__(self, status):
-        self.stack = ()
+        self.stack = []
         self.empty = True
 
+    def push(self, frame):
+        self.empty = False
+        self.stack.append(frame)
 
+    def pop(self):
+        if self.empty:
+            sys.stderr.write("ERROR 55: LF doesn't exist\n")
+            sys.exit(55)
+        if self.stack.count() == 1:
+            self.empty = True
+        return self.stack.pop()
+
+    def getLF(self):
+        if self.empty:
+            sys.stderr.write("ERROR 55: LF doesn't exist\n")
+            sys.exit(55)
+        return self.stack[self.stack.count() - 1]
 
 
 def argumentsHadling():
