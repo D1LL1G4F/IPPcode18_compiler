@@ -6,6 +6,76 @@ import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
 
 
+class Variable():
+    name = None
+    type = None
+    value = None
+
+    def __init__(self, name, type, value):
+        self.name = name
+        self.type = type
+        if type == "string":
+            self.value = value
+        elif type == "int":
+            try:
+                self.value = int(value)
+            except Exception:
+                sys.stderr.write("ERROR 32: value of variable \"{}\" is wrong"
+                                 " (supposed to be integer)\n".format(name))
+                sys.exit(32)
+        elif type == "bool":
+            if value == "true":
+                self.value = True
+            elif value == "false":
+                self.value = False
+            else:
+                sys.stderr.write("ERROR 32: value of variable \"{}\" is wrong"
+                                 " (supposed to be boolean)\n".format(name))
+                sys.exit(32)
+        else:
+            sys.stderr.write("ERROR 32: wrong type of variable \"{}\""
+                             "\n".format(name))
+            sys.exit(32)
+
+
+class Frame():
+    variable = None
+    defined = None
+
+    def __init__(self, status):
+        self.variable = {}
+        self.defined = status
+
+    def defVar(self, name):
+        self.variable[name] = None
+
+    def setVar(self, var):
+        if var.name in self.variable:
+            self.variable[var.name] = var
+        else:
+            sys.stderr.write("ERROR 54: variable \"{}\" doesn't exist"
+                             "\n".format(var.name))
+            sys.exit(54)
+
+    def clear(self):
+        self.variable.clear()
+        self.defined = False
+
+    def define(self):
+        self.defined = True
+
+
+class StackFrame():
+    stack = None
+    empty = None
+
+    def __init__(self, status):
+        self.stack = ()
+        self.empty = True
+
+
+
+
 def argumentsHadling():
     parser = argparse.ArgumentParser(prog="interpret.py", add_help=True)
     parser.add_argument("--source", required=True, nargs=1, metavar="FILE",
