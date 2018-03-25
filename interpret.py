@@ -53,11 +53,14 @@ class Frame():
             sys.stderr.write("ERROR 55: accesing undefined frame\n")
             sys.exit(55)
 
+    def isDefined(self, varName):
+        return varName in self.variable
+
     def setVar(self, var):
         if var.name in self.variable:
             self.variable[var.name] = var
         else:
-            sys.stderr.write("ERROR 54: variable \"{}\" doesn't exist"
+            sys.stderr.write("ERROR 54: variable \"{}\" is undefined"
                              "\n".format(var.name))
             sys.exit(54)
 
@@ -73,17 +76,20 @@ class StackFrame():
     stack = None
     empty = None
 
-    def __init__(self, status):
+    def __init__(self):
         self.stack = []
         self.empty = True
 
     def push(self, frame):
         self.empty = False
+        if frame.defined is not True:
+            sys.stderr.write("ERROR 55: pushing undefined frame\n")
+            sys.exit(55)
         self.stack.append(frame)
 
     def pop(self):
         if self.empty:
-            sys.stderr.write("ERROR 55: LF doesn't exist\n")
+            sys.stderr.write("ERROR 55: LF doesn't exist (empty stackframe)\n")
             sys.exit(55)
         if self.stack.count() == 1:
             self.empty = True
@@ -91,9 +97,14 @@ class StackFrame():
 
     def getLF(self):
         if self.empty:
-            sys.stderr.write("ERROR 55: LF doesn't exist\n")
+            sys.stderr.write("ERROR 55: LF doesn't exist (empty stackframe)\n")
             sys.exit(55)
         return self.stack[self.stack.count() - 1]
+
+
+GF = Frame(True)
+TF = Frame(False)
+stackframe = StackFrame()
 
 
 def argumentsHadling():
@@ -140,7 +151,7 @@ def checkTag(element, tag):
 
 def checkProgramFormatting(program):
     checkTag(program, "program")
-    if (len(program.attrib) != 1):
+    if (len(program.attrib) < 1):
         sys.stderr.write("ERROR 31: Wrongly formatted XML file (wrong program"
                          " attributes)\n")
         sys.exit(31)
@@ -169,6 +180,18 @@ def checkProgramFormatting(program):
             sys.stderr.write("ERROR 31: Wrongly formatted XML file (missing o"
                              "pcode argument in instruction)\n")
             sys.exit(31)
+
+
+def checkArgFormat(instruct, numOfArgs):
+    cnt = 0
+    for arg in instruct:
+        cnt += 1
+        checkTag(arg, "arg" + str(cnt))
+    if cnt != numOfArgs:
+        instructOrderNum = int(instruct.attrib.get("order"))
+        sys.stderr.write("ERROR 32: instruction number: {} has invalid amount"
+                         " of arguments\n".format(instructOrderNum))
+        sys.exit(32)
 
 
 # function for finding instruction with selected instructionNumber
@@ -200,33 +223,55 @@ def lookUpInstuct(instructionNumber, program):
         return followingInstruction
 
 
-def parseMove(instruction):
+def parseMove(instruction):  # TODO
+    checkArgFormat(instruction, 2)
     instructOrderNum = int(instruction.attrib.get("order"))
     print(instruction.attrib)
     return instructOrderNum+1
 
 
-def parseCreateframe(instruction):
+def parseCreateframe(instruction):  # DONE
+    checkArgFormat(instruction, 0)
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
+    global TF
+    if TF.defined:
+        TF.clear()
+        TF.define()
+    else:
+        TF.define()
     return instructOrderNum+1
 
 
-def parsePushframe(instruction):
+def parsePushframe(instruction):  # DONE
+    checkArgFormat(instruction, 0)
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
+    global TF
+    global stackframe
+    stackframe.push(TF)
+    TF.clear()
     return instructOrderNum+1
 
 
-def parsePopframe(instruction):
+def parsePopframe(instruction):  # DONE
+    checkArgFormat(instruction, 0)
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
+    global TF
+    global stackframe
+    TF = stackframe.pop()
     return instructOrderNum+1
 
 
 def parseDefvar(instruction):
+    checkArgFormat(instruction, 1)
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
+    arg1 = instruction[0]
+    if arg1.attrib.get("type") != "var":
+        sys.stderr.write("ERROR 32: instruction number: {} has wrong argument"
+                         " type (expected var)\n".format(instructOrderNum))
+        sys.exit(32)
+    else:
+        varFrame = getVarFrame()
+        varName = getVarName()
     return instructOrderNum+1
 
 
@@ -461,7 +506,7 @@ def main():
 
     nextInstructionNumber = 1  # start with first instruction
     instruction = lookUpInstuct(nextInstructionNumber, program)
-    while (instruction):
+    while (instruction is not None):
         nextInstructionNumber = interpretInstruction(instruction)
         instruction = lookUpInstuct(nextInstructionNumber, program)
 
