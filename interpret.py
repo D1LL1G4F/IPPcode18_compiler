@@ -56,6 +56,12 @@ class Frame():
     def isDefined(self, varName):
         return varName in self.variable
 
+    def isInitialized(self, varName):
+        if self.variable[varName] is None:
+            return False
+        else:
+            return True
+
     def setVar(self, var):
         if var.name in self.variable:
             self.variable[var.name] = var
@@ -274,30 +280,55 @@ def getVarName(rawVar):
         sys.exit(32)
 
 
+def verifyVar(arg, instructOrderNum):
+    if arg.attrib.get("type") != "var":
+        sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
+                         "ent type (expected var)\n"
+                         .format(instructOrderNum))
+        sys.exit(32)
+    else:
+        getVarFrame(arg.text)
+        getVarName(arg.text)
+
+
+def getSymbType(rawSymb):
+    pass
+
+
+def verifySymb(arg, instructOrderNum):  # NEED TO BE REWRITTEN
+    argType = getSymbType(arg.text)
+    argVal = getSymbVal(argVal, arg2.text)
+
+    argType = arg.attrib.get("type")
+    if argType == "var":
+        getVarFrame(arg.text)
+        getVarName(arg.text)
+    elif argType == "string":
+        pass
+    elif argType == "int":
+        pass
+    elif argType == "bool":
+        pass
+    else:
+        sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
+                         "ent type (expected var|string|int|bool)\n"
+                         .format(instructOrderNum))
+        sys.exit(32)
+
+
 def parseMove(instruction, interpreting):  # TODO
     instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 2)
-        arg1 = instruction[0]
-        if arg1.attrib.get("type") != "var":
-            sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
-                             "ent type (expected var)\n"
-                             .format(instructOrderNum))
-            sys.exit(32)
-        else:
-            getVarFrame(arg1.text)
-            getVarName(arg1.text)
-
-        arg2 = instruction[1]
-        getSymbType(arg2.text)
-        getSymbVal(arg2.text)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
     else:
         arg1 = instruction[0]
         arg2 = instruction[1]
         arg1Frame = getVarFrame(arg1.text)
         arg1Name = getVarName(arg1.text)
         arg2Type = getSymbType(arg2.text)
-        arg2Name = getSymbVal(arg2.text)
+        arg2Name = getSymbVal(arg2Type, arg2.text)
         return instructOrderNum+1
 
 
@@ -339,20 +370,15 @@ def parsePopframe(instruction, interpreting):  # DONE
 
 
 def parseDefvar(instruction, interpreting):  # DONE
+    instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 1)
-    instructOrderNum = int(instruction.attrib.get("order"))
-    arg1 = instruction[0]
-
-    if arg1.attrib.get("type") != "var":
-        sys.stderr.write("ERROR 32: instruction number: {} has wrong argument"
-                         " type (expected var)\n".format(instructOrderNum))
-        sys.exit(32)
-    else:
-        varFrame = getVarFrame(arg1.text)
-        varName = getVarName(arg1.text)
+        verifyVar(instruction[0], instructOrderNum)
 
     if interpreting is True:
+        arg1 = instruction[0]
+        varFrame = getVarFrame(arg1.text)
+        varName = getVarName(arg1.text)
         if varFrame == "GF":
             global GF
             GF.defVar(varName)
@@ -364,7 +390,7 @@ def parseDefvar(instruction, interpreting):  # DONE
         if varFrame == "TF":
             global TF
             TF.defVar(varName)
-    return instructOrderNum+1
+        return instructOrderNum+1
 
 
 def parseCall(instruction, interpreting):  # DONE
