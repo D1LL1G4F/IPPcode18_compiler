@@ -105,9 +105,32 @@ class StackFrame():
         self.stack[self.stack.count() - 1] = updatedLF
 
 
+class CallStack():
+    stack = None
+    empty = None
+
+    def __init__(self):
+        self.stack = []
+        self.empty = True
+
+    def push(self, instructNumber):
+        self.empty = False
+        self.stack.append(instructNumber)
+
+    def pop(self):
+        if self.empty:
+            sys.stderr.write("ERROR 56: Call stack is empty\n")
+            sys.exit(56)
+        if self.stack.count() == 1:
+            self.empty = True
+        return self.stack.pop()
+
+
 GF = Frame(True)
 TF = Frame(False)
 stackframe = StackFrame()
+labels = {}
+callstack = CallStack()
 
 
 def argumentsHadling():
@@ -252,10 +275,30 @@ def getVarName(rawVar):
 
 
 def parseMove(instruction, interpreting):  # TODO
-    checkArgFormat(instruction, 2)
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 2)
+        arg1 = instruction[0]
+        if arg1.attrib.get("type") != "var":
+            sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
+                             "ent type (expected var)\n"
+                             .format(instructOrderNum))
+            sys.exit(32)
+        else:
+            getVarFrame(arg1.text)
+            getVarName(arg1.text)
+
+        arg2 = instruction[1]
+        getSymbType(arg2.text)
+        getSymbVal(arg2.text)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2.text)
+        arg2Name = getSymbVal(arg2.text)
+        return instructOrderNum+1
 
 
 def parseCreateframe(instruction, interpreting):  # DONE
@@ -324,16 +367,44 @@ def parseDefvar(instruction, interpreting):  # DONE
     return instructOrderNum+1
 
 
-def parseCall(instruction, interpreting):
+def parseCall(instruction, interpreting):  # DONE
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 1)
+        arg1 = instruction[0]
+        if arg1.attrib.get(type) == "label":
+            label = arg1.text
+            if len(label) < 1:
+                sys.stderr.write("ERROR 32: instruction number: {} has in"
+                                 "valid label name\n"
+                                 .format(instructOrderNum))
+                sys.exit(32)
+            else:
+                if label in labels:
+                    pass
+                else:
+                    sys.stderr.write("ERROR 52: label: \"{}\" doesn't exist"
+                                     "\n".format(label))
+                    sys.exit(52)
+        else:
+            sys.stderr.write("ERROR 32: instruction number: {} has wrong:"
+                             " argument type (expected label)\n"
+                             .format(instructOrderNum))
+            sys.exit(32)
+    else:
+        global labels
+        global callstack
+        callstack.push(instructOrderNum)
+        label = instruction[0].text
+        return labels[label]
 
 
-def parseReturn(instruction, interpreting):
-    instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+def parseReturn(instruction, interpreting):  # DONE
+    if interpreting is False:
+        checkArgFormat(instruction, 0)
+    else:
+        global callstack
+        return callstack.pop()
 
 
 def parsePushs(instruction, interpreting):
@@ -498,6 +569,35 @@ def parseBreak(instruction, interpreting):
     return instructOrderNum+1
 
 
+def loadLabels(program):
+    global labels
+    for instruction in program:
+        instructOrderNum = instruction.attrib.get("order")
+        opcode = instruction.attrib.get("opcode")
+        if opcode == "LABEL":
+            checkArgFormat(instruction, 1)
+            arg1 = instruction[0]
+            if arg1.attrib.get(type) == "label":
+                label = arg1.text
+                if len(label) < 1:
+                    sys.stderr.write("ERROR 32: instruction number: {} has in"
+                                     "valid label name\n"
+                                     .format(instructOrderNum))
+                    sys.exit(32)
+                else:
+                    if label in labels:
+                        sys.stderr.write("ERROR 52: label: \"{}\" is already d"
+                                         "efined\n".format(label))
+                        sys.exit(52)
+                    else:
+                        labels[label] = instructOrderNum
+            else:
+                sys.stderr.write("ERROR 32: instruction number: {} has wrong:"
+                                 " argument type (expected label)\n"
+                                 .format(instructOrderNum))
+                sys.exit(32)
+
+
 opcodeParser = {
      "MOVE": parseMove,
      "CREATEFRAME": parseCreateframe,
@@ -557,6 +657,8 @@ def main():
     program = parseFile(file).getroot()  # get root from XML file
 
     checkProgramFormatting(program)  # check valid tags/args of prog and instr.
+
+    loadLabels(program)
 
     # pre-runtime verification of program
     for instruct in program:
