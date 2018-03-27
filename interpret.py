@@ -53,14 +53,17 @@ class Frame():
             sys.stderr.write("ERROR 55: accesing undefined frame\n")
             sys.exit(55)
 
-    def isDefined(self, varName):
+    def isVarDefined(self, varName):
         return varName in self.variable
 
-    def isInitialized(self, varName):
+    def isVarInitialized(self, varName):
         if self.variable[varName] is None:
             return False
         else:
             return True
+
+    def getVar(self, varName):
+        return self.variable[varName]
 
     def setVar(self, var):
         if var.name in self.variable:
@@ -106,9 +109,6 @@ class StackFrame():
             sys.stderr.write("ERROR 55: LF doesn't exist (empty stackframe)\n")
             sys.exit(55)
         return self.stack[self.stack.count() - 1]
-
-    def updateLF(self, updatedLF):
-        self.stack[self.stack.count() - 1] = updatedLF
 
 
 class CallStack():
@@ -270,7 +270,7 @@ def getVarFrame(rawVar):
         sys.exit(32)
 
 
-def getVarName(rawVar):
+def getVarName(rawVar):  # TODO correct name validation
     varFrame = rawVar[2:]
     if varFrame[0] == "@":
         return varFrame[1:]
@@ -291,24 +291,29 @@ def verifyVar(arg, instructOrderNum):
         getVarName(arg.text)
 
 
-def getSymbType(rawSymb):
+def verifyString(str):  # TODO
     pass
 
 
-def verifySymb(arg, instructOrderNum):  # NEED TO BE REWRITTEN
-    argType = getSymbType(arg.text)
-    argVal = getSymbVal(argVal, arg2.text)
+def verifyInt(str):  # TODO
+    pass
 
+
+def verifyBoolean(str):  # TODO
+    pass
+
+
+def verifySymb(arg, instructOrderNum):  # DONE
     argType = arg.attrib.get("type")
     if argType == "var":
         getVarFrame(arg.text)
         getVarName(arg.text)
     elif argType == "string":
-        pass
+        verifyString(arg.text)
     elif argType == "int":
-        pass
+        verifyInt(arg.text)
     elif argType == "bool":
-        pass
+        verifyBoolean(arg.text)
     else:
         sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
                          "ent type (expected var|string|int|bool)\n"
@@ -316,7 +321,89 @@ def verifySymb(arg, instructOrderNum):  # NEED TO BE REWRITTEN
         sys.exit(32)
 
 
-def parseMove(instruction, interpreting):  # TODO
+def getVarValue(frame, name):
+    if frame == "GF":
+        global GF
+        if GF.isVarDefined(name):
+            if GF.isVarInitialized(name):
+                value = GF.getVar(name).value
+            else:
+                sys.stderr.write("ERROR 56: variable: \"{}\" is defined but"
+                                 " unitialized when accessing it's value\n"
+                                 .format(name))
+                sys.exit(56)
+        else:
+            sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+                             .format(name))
+            sys.exit(54)
+    elif frame == "TF":
+        global TF
+        if TF.defined:
+            if TF.isVarDefined(name):
+                if TF.isVarInitialized(name):
+                    value = TF.getVar(name).value
+                else:
+                    sys.stderr.write("ERROR 56: variable: \"{}\" is defined bu"
+                                     "t unitialized when accessing it's value"
+                                     "\n".format(name))
+                    sys.exit(56)
+            else:
+                sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+                                 .format(name))
+                sys.exit(54)
+        else:
+            sys.stderr.write("ERROR 54: accessing variable: \"{}\" from"
+                             " undefined frame\n".format(name))
+            sys.exit(54)
+    elif frame == "LF":
+        global stackframe
+        LF = stackframe.getLF()
+        if LF.defined:
+            if LF.isVarDefined(name):
+                if LF.isVarInitialized(name):
+                    value = LF.getVar(name).value
+                else:
+                    sys.stderr.write("ERROR 56: variable: \"{}\" is defined bu"
+                                     "t unitialized when accessing it's value"
+                                     "\n".format(name))
+                    sys.exit(56)
+            else:
+                sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+                                 .format(name))
+                sys.exit(54)
+        else:
+            sys.stderr.write("ERROR 54: accessing variable: \"{}\" from"
+                             " undefined frame\n".format(name))
+            sys.exit(54)
+    else:
+        sys.stderr.write("ERROR in getVarValue() that should never occur :/")
+        sys.exit(32)
+    return value
+
+
+def setVariable(varFrame, varName, constType, constValue):
+    if varFrame == "GF":
+        global GF
+        if GF.isVarDefined(varName):
+            if GF.isVarInitialized(varName):
+                var = GF.getVar(varName)
+                # TODO
+            else:
+                newVar = Variable(varName, constType, constValue)
+                GF.setVar(newVar)
+        else:
+            sys.stderr.write("ERROR 54: accessing variable: \"{}\" from"
+                             " undefined frame\n".format(varName))
+            sys.exit(54)
+    elif varFrame == "TF":
+        pass
+    elif varFrame == "LF":
+        pass
+    else:
+        sys.stderr.write("ERROR in getVarValue() that should never occur :/")
+        sys.exit(32)
+
+def parseMove(instruction, interpreting):  # DONE
     instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 2)
@@ -327,8 +414,14 @@ def parseMove(instruction, interpreting):  # TODO
         arg2 = instruction[1]
         arg1Frame = getVarFrame(arg1.text)
         arg1Name = getVarName(arg1.text)
-        arg2Type = getSymbType(arg2.text)
-        arg2Name = getSymbVal(arg2Type, arg2.text)
+        arg2Type = arg2.attrib.get("type")
+        if arg2Type == "var":
+            varFrame = getVarFrame(arg2.text)
+            varName = getVarName(arg2.text)
+            arg2Value = getVarValue(varFrame, varName)
+        else:
+            arg2Value = arg2.text
+        setVariable(arg1Frame, arg1Name, arg2Type, arg2Value)
         return instructOrderNum+1
 
 
@@ -386,7 +479,6 @@ def parseDefvar(instruction, interpreting):  # DONE
             global stackframe
             LF = stackframe.getLF()
             LF.defVar(varName)
-            stackframe.updateLF(LF)
         if varFrame == "TF":
             global TF
             TF.defVar(varName)
