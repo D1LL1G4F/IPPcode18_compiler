@@ -1064,8 +1064,14 @@ def parseRead(instruction, interpreting):
 
 def parseWrite(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 1)
+        verifySymb(instruction[0], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg1Value = getSymbVal(arg1)
+        print(arg1Value)
+        return instructOrderNum+1
 
 
 def parseConcat(instruction, interpreting):
