@@ -659,28 +659,121 @@ def parsePops(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parseAdd(instruction, interpreting):
+def parseAdd(instruction, interpreting):  # DONE
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "int" and arg2Type == arg3Type:
+            result = arg2Value + arg3Value
+            setVariable(arg1Frame, arg1Name, arg2Type, result)
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must be integers)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseSub(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "int" and arg2Type == arg3Type:
+            result = arg2Value - arg3Value
+            setVariable(arg1Frame, arg1Name, arg2Type, result)
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must be integers)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseMul(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "int" and arg2Type == arg3Type:
+            result = arg2Value * arg3Value
+            setVariable(arg1Frame, arg1Name, arg2Type, result)
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must be integers)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseIdiv(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "int" and arg2Type == arg3Type:
+            if arg3Value == 0:
+                sys.stderr.write("ERROR 57: division by zero in instruction n"
+                                 "umber: {}"
+                                 .format(instructOrderNum))
+                sys.exit(57)
+            result = arg2Value // arg3Value
+            setVariable(arg1Frame, arg1Name, arg2Type, result)
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must be integers)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseLt(instruction, interpreting):
