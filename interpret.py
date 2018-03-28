@@ -1076,26 +1076,134 @@ def parseWrite(instruction, interpreting):
 
 def parseConcat(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "string" and arg2Type == arg3Type:
+            result = arg2Value + arg3Value
+            setVariable(arg1Frame, arg1Name, arg2Type, result)
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must have type string)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseStrlen(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 2)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        if arg2Type == "string":
+            setVariable(arg1Frame, arg1Name, "int", len(arg2Value))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand type in instruction n"
+                             "umber: {} (arg2 must be string)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseGetchar(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "string" and arg3Type == "int":
+            try:
+                character = arg2Value[arg3Value]
+            except IndexError:
+                sys.stderr.write("ERROR 58: indexing out of string in instruct"
+                                 "ion number: {}"
+                                 .format(instructOrderNum))
+                sys.exit(58)
+            setVariable(arg1Frame, arg1Name, "string", str(character))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (arg2 must be string and arg3 int)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseSetchar(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if getVarType(arg1Frame, arg1Name) == "string":
+            if arg2Type == "int" and arg3Type == "string":
+                if len(arg3Value) < 1:
+                    varString = getVarValue(arg1Frame, arg1Name)
+                    try:
+                        varString[arg2Value] = arg3Value[0]
+                    except IndexError:
+                        sys.stderr.write("ERROR 58: indexing out of string in "
+                                         "instruction number: {}"
+                                         .format(instructOrderNum))
+                        sys.exit(58)
+                    setVariable(arg1Frame, arg1Name, "string", varString)
+                else:
+                    sys.stderr.write("ERROR 53: invalid value in instruction n"
+                                     "umber: {} (arg3 string can't be empty)"
+                                     .format(instructOrderNum))
+                    sys.exit(58)
+            else:
+                sys.stderr.write("ERROR 53: invalid operand type in instructio"
+                                 "n number: {} (arg2 must be int and ar3g stri"
+                                 "ng".format(instructOrderNum))
+                sys.exit(53)
+        else:
+            sys.stderr.write("ERROR 53: invalid operand type in instruction n"
+                             "umber: {} (variable in arg1 must be string)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseType(instruction, interpreting):
