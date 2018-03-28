@@ -325,6 +325,20 @@ def verifyBoolean(str):  # TODO
     pass
 
 
+def strToBool(str):
+    if str == "true":
+        return True
+    else:
+        return False
+
+
+def boolToStr(bool):
+    if bool:
+        return "true"
+    else:
+        return "false"
+
+
 def verifySymb(arg, instructOrderNum):  # DONE
     argType = arg.attrib.get("type")
     if argType == "var":
@@ -778,50 +792,229 @@ def parseIdiv(instruction, interpreting):
 
 def parseLt(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == arg3Type:
+            result = arg2Value < arg3Value
+            setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must have same type)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseGt(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == arg3Type:
+            result = arg2Value < arg3Value
+            setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must have same type)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseEq(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == arg3Type:
+            result = arg2Value == arg3Value
+            setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must have same type)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseAnd(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "bool" and arg2Type == arg3Type:
+            result = strToBool(arg2Value) and strToBool(arg3Value)
+            setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must be bool)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseOr(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "bool" and arg2Type == arg3Type:
+            result = strToBool(arg2Value) or strToBool(arg3Value)
+            setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must be bool)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseNot(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 2)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        if arg2Type == "bool":
+            result = not strToBool(arg2Value)
+            setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand type in instruction n"
+                             "umber: {} (operand must be bool)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseInt2char(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 2)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        if arg2Type == "int":
+            try:
+                character = chr(arg2Value)
+            except ValueError:
+                sys.stderr.write("ERROR 58: invalid UNICODE value in operation"
+                                 " number: {}" .format(instructOrderNum))
+                sys.exit(58)
+            setVariable(arg1Frame, arg1Name, "string", str(character))
+        else:
+            sys.stderr.write("ERROR 53: invalid operand type in instruction n"
+                             "umber: {} (operand must be int)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseStri2int(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 3)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        if arg2Type == "string" and arg3Type == "int":
+            try:
+                ordCharValue = ord(arg2Value[arg3Value])
+            except IndexError:
+                sys.stderr.write("ERROR 58: indexing out of string in instruct"
+                                 "ion number: {}"
+                                 .format(instructOrderNum))
+                sys.exit(58)
+            setVariable(arg1Frame, arg1Name, "int", ordCharValue)
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (symb1 = string, symb2 = int)"
+                             .format(instructOrderNum))
+            sys.exit(53)
+        return instructOrderNum+1
 
 
 def parseRead(instruction, interpreting):
