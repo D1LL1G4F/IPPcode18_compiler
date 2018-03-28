@@ -313,6 +313,20 @@ def verifyVar(arg, instructOrderNum):
         getVarName(arg.text)
 
 
+def verifyType(arg, instructOrderNum):
+    if arg.attrib.get("type") != "type":
+        sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
+                         "ent type (expected type)\n"
+                         .format(instructOrderNum))
+        sys.exit(32)
+    validTypes = ["string", "bool", "int"]
+    if arg.text not in validTypes:
+        sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
+                         "ent value (expected string|bool|int))\n"
+                         .format(instructOrderNum))
+        sys.exit(32)
+
+
 def verifyString(str):  # TODO
     pass
 
@@ -1019,8 +1033,33 @@ def parseStri2int(instruction, interpreting):
 
 def parseRead(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 2)
+        verifyVar(instruction[0], instructOrderNum)
+        verifyType(instruction[1], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        type = arg2.text
+        if type == "int":
+            input = input()
+            try:
+                value = int(input)
+            except Exception:
+                value = 0
+            setVariable(arg1Frame, arg1Name, "int", value)
+        if type == "bool":
+            input = input()
+            if input.lower() == "true":
+                setVariable(arg1Frame, arg1Name, "bool", "true")
+            else:
+                setVariable(arg1Frame, arg1Name, "bool", "false")
+        if type == "string":
+            input = input()
+            setVariable(arg1Frame, arg1Name, "string", input)
+        return instructOrderNum+1
 
 
 def parseWrite(instruction, interpreting):
