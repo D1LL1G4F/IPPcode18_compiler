@@ -1305,7 +1305,7 @@ def parseJumpifeq(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     global labels
     if interpreting is False:
-        checkArgFormat(instruction, 1)
+        checkArgFormat(instruction, 3)
         verifySymb(instruction[1], instructOrderNum)
         verifySymb(instruction[2], instructOrderNum)
         arg1 = instruction[0]
@@ -1348,7 +1348,7 @@ def parseJumpifneq(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     global labels
     if interpreting is False:
-        checkArgFormat(instruction, 1)
+        checkArgFormat(instruction, 3)
         verifySymb(instruction[1], instructOrderNum)
         verifySymb(instruction[2], instructOrderNum)
         arg1 = instruction[0]
@@ -1389,14 +1389,42 @@ def parseJumpifneq(instruction, interpreting):
 
 def parseDprint(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 1)
+        verifySymb(instruction[0], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        sys.stderr.write(getSymbVal(arg1))
+        return instructOrderNum+1
 
 
 def parseBreak(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 0)
+    else:
+        global GF
+        global TF
+        global stackframe
+        if stackframe.empty:
+            LFvar = "EMPTY STACKFRAME"
+            LFdef = "EMPTY STACKFRAME"
+        else:
+            LF = stackframe.getLF()
+            LFvar = LF.variable
+            LFdef = LF.defined
+        sys.stderr.write("instruction number: {}\n"
+                         "GF defined: {}\n"
+                         "GF variables: {}\n"
+                         "TF defined: {}\n"
+                         "TF variables: {}\n"
+                         "LF defined: {}\n"
+                         "LF variables: {}\n"
+                         .format(instructOrderNum, str(GF.defined),
+                                 str(GF.variable), str(TF.defined),
+                                 str(TF.variable), str(LFdef),
+                                 str(LFvar)))
+        return instructOrderNum+1
 
 
 def loadLabels(program):
