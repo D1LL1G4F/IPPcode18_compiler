@@ -383,7 +383,7 @@ def getVarValue(frame, name):
                                  .format(name))
                 sys.exit(56)
         else:
-            sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+            sys.stderr.write("ERROR 54: variable: \"{}\" is undefined\n"
                              .format(name))
             sys.exit(54)
     elif frame == "TF":
@@ -398,7 +398,7 @@ def getVarValue(frame, name):
                                      "\n".format(name))
                     sys.exit(56)
             else:
-                sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+                sys.stderr.write("ERROR 54: variable: \"{}\" is undefined\n"
                                  .format(name))
                 sys.exit(54)
         else:
@@ -418,7 +418,7 @@ def getVarValue(frame, name):
                                      "\n".format(name))
                     sys.exit(56)
             else:
-                sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+                sys.stderr.write("ERROR 54: variable: \"{}\" is undefined\n"
                                  .format(name))
                 sys.exit(54)
         else:
@@ -443,7 +443,7 @@ def getVarType(frame, name):
                                  .format(name))
                 sys.exit(56)
         else:
-            sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+            sys.stderr.write("ERROR 54: variable: \"{}\" is undefined\n"
                              .format(name))
             sys.exit(54)
     elif frame == "TF":
@@ -458,7 +458,7 @@ def getVarType(frame, name):
                                      "\n".format(name))
                     sys.exit(56)
             else:
-                sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+                sys.stderr.write("ERROR 54: variable: \"{}\" is undefined\n"
                                  .format(name))
                 sys.exit(54)
         else:
@@ -478,7 +478,7 @@ def getVarType(frame, name):
                                      "\n".format(name))
                     sys.exit(56)
             else:
-                sys.stderr.write("ERROR 54: variable: \"{}\" is unitialized\n"
+                sys.stderr.write("ERROR 54: variable: \"{}\" is undefined\n"
                                  .format(name))
                 sys.exit(54)
         else:
@@ -1208,32 +1208,183 @@ def parseSetchar(instruction, interpreting):
 
 def parseType(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    if interpreting is False:
+        checkArgFormat(instruction, 2)
+        verifyVar(instruction[0], instructOrderNum)
+        verifySymb(instruction[1], instructOrderNum)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg1Frame = getVarFrame(arg1.text)
+        arg1Name = getVarName(arg1.text)
+        if (arg2.attrib.get("type") == "var"):
+            arg2Frame = getVarFrame(arg2.text)
+            arg2Name = getVarName(arg2.text)
+            if arg2Frame == "GF":
+                global GF
+                if GF.isVarDefined(arg2Name):
+                    if GF.isVarInitialized(arg2Name):
+                        arg2Type = GF.getVar(arg2Name).type
+                    else:
+                        arg2Type = ""
+                else:
+                    sys.stderr.write("ERROR 54: variable: \"{}\" is undefined"
+                                     "\n".format(arg2Name))
+                    sys.exit(54)
+            elif arg2Frame == "TF":
+                global TF
+                if TF.defined:
+                    if TF.isVarDefined(arg2Name):
+                        if TF.isVarInitialized(arg2Name):
+                            arg2Type = TF.getVar(arg2Name).type
+                        else:
+                            arg2Type = ""
+                    else:
+                        sys.stderr.write("ERROR 54: variable: \"{}\" is undefi"
+                                         "ned\n".format(arg2Name))
+                        sys.exit(54)
+                else:
+                    sys.stderr.write("ERROR 54: accessing variable: \"{}\" fr"
+                                     "om undefined frame\n".format(arg2Name))
+                    sys.exit(54)
+            else:
+                global stackframe
+                LF = stackframe.getLF()
+                if LF.defined:
+                    if LF.isVarDefined(arg2Name):
+                        if LF.isVarInitialized(arg2Name):
+                            arg2Type = LF.getVar(arg2Name).type
+                        else:
+                            arg2Type = ""
+                    else:
+                        sys.stderr.write("ERROR 54: variable: \"{}\" is unde"
+                                         "fined\n".format(arg2Name))
+                        sys.exit(54)
+                else:
+                    sys.stderr.write("ERROR 54: accessing variable: \"{}\" fr"
+                                     "om undefined frame\n".format(arg2Name))
+                    sys.exit(54)
+        else:
+            arg2Type = getSymbType(arg2)
+        setVariable(arg1Frame, arg1Name, "string", arg2Type)
+        return instructOrderNum+1
 
 
 def parseLabel(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
     return instructOrderNum+1
 
 
 def parseJump(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    global labels
+    if interpreting is False:
+        checkArgFormat(instruction, 1)
+        arg1 = instruction[0]
+        if arg1.attrib.get(type) == "label":
+            label = arg1.text
+            if label in labels:
+                return
+            else:
+                sys.stderr.write("ERROR 52: instruction number: {} requests ju"
+                                 "mp on nonexistent label\n"
+                                 .format(instructOrderNum))
+                sys.exit(52)
+        else:
+            sys.stderr.write("ERROR 32: instruction number: {} has wrong:"
+                             " argument type (expected label)\n"
+                             .format(instructOrderNum))
+            sys.exit(32)
+    else:
+        arg1 = instruction[0]
+        label = arg1.text
+        return labels[label]
 
 
 def parseJumpifeq(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    global labels
+    if interpreting is False:
+        checkArgFormat(instruction, 1)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+        arg1 = instruction[0]
+        if arg1.attrib.get(type) == "label":
+            label = arg1.text
+            if label in labels:
+                return
+            else:
+                sys.stderr.write("ERROR 52: instruction number: {} requests ju"
+                                 "mp on nonexistent label\n"
+                                 .format(instructOrderNum))
+                sys.exit(52)
+        else:
+            sys.stderr.write("ERROR 32: instruction number: {} has wrong:"
+                             " argument type (expected label)\n"
+                             .format(instructOrderNum))
+            sys.exit(32)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        label = arg1.text
+        if arg2Type == arg3Type:
+            if arg2Value == arg3Value:
+                return labels[label]
+            else:
+                return instructOrderNum+1
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must have same type)"
+                             .format(instructOrderNum))
+            sys.exit(53)
 
 
 def parseJumpifneq(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
-    print(instruction.attrib)
-    return instructOrderNum+1
+    global labels
+    if interpreting is False:
+        checkArgFormat(instruction, 1)
+        verifySymb(instruction[1], instructOrderNum)
+        verifySymb(instruction[2], instructOrderNum)
+        arg1 = instruction[0]
+        if arg1.attrib.get(type) == "label":
+            label = arg1.text
+            if label in labels:
+                return
+            else:
+                sys.stderr.write("ERROR 52: instruction number: {} requests ju"
+                                 "mp on nonexistent label\n"
+                                 .format(instructOrderNum))
+                sys.exit(52)
+        else:
+            sys.stderr.write("ERROR 32: instruction number: {} has wrong:"
+                             " argument type (expected label)\n"
+                             .format(instructOrderNum))
+            sys.exit(32)
+    else:
+        arg1 = instruction[0]
+        arg2 = instruction[1]
+        arg3 = instruction[2]
+        arg2Type = getSymbType(arg2)
+        arg2Value = getSymbVal(arg2)
+        arg3Type = getSymbType(arg3)
+        arg3Value = getSymbVal(arg3)
+        label = arg1.text
+        if arg2Type == arg3Type:
+            if arg2Value == arg3Value:
+                return instructOrderNum+1
+            else:
+                return labels[label]
+        else:
+            sys.stderr.write("ERROR 53: invalid operand types in instruction n"
+                             "umber: {} (both operands must have same type)"
+                             .format(instructOrderNum))
+            sys.exit(53)
 
 
 def parseDprint(instruction, interpreting):
