@@ -4,6 +4,7 @@ import os
 import math
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
+from copy import deepcopy
 
 
 class Variable():
@@ -73,7 +74,7 @@ class Frame():
                              "\n".format(var.name))
             sys.exit(54)
 
-    def clear(self):
+    def reset(self):
         self.variable.clear()
         self.defined = False
 
@@ -94,7 +95,7 @@ class StackFrame():
         if frame.defined is not True:
             sys.stderr.write("ERROR 55: pushing undefined frame\n")
             sys.exit(55)
-        self.stack.append(frame)
+        self.stack.append(deepcopy(frame))
 
     def pop(self):
         if self.empty:
@@ -108,7 +109,7 @@ class StackFrame():
         if self.empty:
             sys.stderr.write("ERROR 55: LF doesn't exist (empty stackframe)\n")
             sys.exit(55)
-        return self.stack[self.stack.count() - 1]
+        return self.stack[-1]
 
 
 class CallStack():
@@ -526,6 +527,14 @@ def getSymbVal(arg):
         varFrame = getVarFrame(arg.text)
         varName = getVarName(arg.text)
         return getVarValue(varFrame, varName)
+    elif arg2Type == "int":
+        try:
+            integerval = int(arg.text)
+        except Exception:
+            sys.stderr.write("ERROR 32: wrong value in some int"
+                             " (supposed to be integer)\n")
+            sys.exit(32)
+        return integerval
     else:
         return arg.text
 
@@ -564,7 +573,7 @@ def parseCreateframe(instruction, interpreting):  # DONE
         instructOrderNum = int(instruction.attrib.get("order"))
         global TF
         if TF.defined:
-            TF.clear()
+            TF.reset()
             TF.define()
         else:
             TF.define()
@@ -579,7 +588,7 @@ def parsePushframe(instruction, interpreting):  # DONE
         global TF
         global stackframe
         stackframe.push(TF)
-        TF.clear()
+        TF.reset()
         return instructOrderNum+1
 
 
@@ -619,10 +628,11 @@ def parseDefvar(instruction, interpreting):  # DONE
 
 def parseCall(instruction, interpreting):  # DONE
     instructOrderNum = int(instruction.attrib.get("order"))
+    global labels
     if interpreting is False:
         checkArgFormat(instruction, 1)
         arg1 = instruction[0]
-        if arg1.attrib.get(type) == "label":
+        if arg1.attrib.get("type") == "label":
             label = arg1.text
             if len(label) < 1:
                 sys.stderr.write("ERROR 32: instruction number: {} has in"
@@ -642,7 +652,6 @@ def parseCall(instruction, interpreting):  # DONE
                              .format(instructOrderNum))
             sys.exit(32)
     else:
-        global labels
         global callstack
         callstack.push(instructOrderNum)
         label = instruction[0].text
@@ -1281,7 +1290,7 @@ def parseJump(instruction, interpreting):
     if interpreting is False:
         checkArgFormat(instruction, 1)
         arg1 = instruction[0]
-        if arg1.attrib.get(type) == "label":
+        if arg1.attrib.get("type") == "label":
             label = arg1.text
             if label in labels:
                 return
@@ -1309,7 +1318,7 @@ def parseJumpifeq(instruction, interpreting):
         verifySymb(instruction[1], instructOrderNum)
         verifySymb(instruction[2], instructOrderNum)
         arg1 = instruction[0]
-        if arg1.attrib.get(type) == "label":
+        if arg1.attrib.get("type") == "label":
             label = arg1.text
             if label in labels:
                 return
@@ -1352,7 +1361,7 @@ def parseJumpifneq(instruction, interpreting):
         verifySymb(instruction[1], instructOrderNum)
         verifySymb(instruction[2], instructOrderNum)
         arg1 = instruction[0]
-        if arg1.attrib.get(type) == "label":
+        if arg1.attrib.get("type") == "label":
             label = arg1.text
             if label in labels:
                 return
@@ -1435,7 +1444,7 @@ def loadLabels(program):
         if opcode == "LABEL":
             checkArgFormat(instruction, 1)
             arg1 = instruction[0]
-            if arg1.attrib.get(type) == "label":
+            if arg1.attrib.get("type") == "label":
                 label = arg1.text
                 if len(label) < 1:
                     sys.stderr.write("ERROR 32: instruction number: {} has in"
@@ -1448,7 +1457,7 @@ def loadLabels(program):
                                          "efined\n".format(label))
                         sys.exit(52)
                     else:
-                        labels[label] = instructOrderNum
+                        labels[label] = int(instructOrderNum)
             else:
                 sys.stderr.write("ERROR 32: instruction number: {} has wrong:"
                                  " argument type (expected label)\n"
