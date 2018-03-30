@@ -11,6 +11,25 @@
   $parser = "parse.php";
   $interpreter = "interpreter.py";
 
+  function appendDirName($array, $dirname) {
+    $newArray = $array;
+    foreach ($newArray as $key => $item) {
+      $newArray[$key] = $dirname . $item; //concatinate your existing array with new one
+    }
+    return $newArray;
+  }
+
+  function recursiveGlob($folder, $pattern) {
+    $dir = new RecursiveDirectoryIterator($folder);
+    $ite = new RecursiveIteratorIterator($dir);
+    $files = new RegexIterator($ite, $pattern, RegexIterator::GET_MATCH);
+    $fileList = array();
+    foreach($files as $file) {
+        $fileList = array_merge($fileList, $file);
+    }
+    return $fileList;
+  }
+
   /// LOAD ARGUMENTS ///
 
   $options = getopt("", array("help","directory:","recursive","parse-script:","int-script:"));
@@ -64,9 +83,13 @@
         break;
     }
   }
+
+  $parser = $directory . "/" . $parser;
+  $interpreter = $directory . "/" . $interpreter;
+  $recOptionStr = $recSearch ? "yes" : "no";
   /// END OF GETOPTS PARSER ////
 
-  $outputHTML =
+  $templateHTML =
   "<!DOCTYPE html>
   <html>
   <head>
@@ -86,7 +109,11 @@
   </head>
   <body>
 
-  <h2>Interpreter test</h2>
+  <h1>Interpreter test</h1>
+  <p><font size=\"4\"><strong>test files directory: </strong></font><i>" . $directory . "</i></p>
+  <p><font size=\"4\"><strong>recursive directory search: </strong></font><i>" . $recOptionStr ."</i></p>
+  <p><font size=\"4\"><strong>parser: </strong></font><i>" . $parser ."</i></p>
+  <p><font size=\"4\"><strong>interpreter: </strong></font><i>" . $interpreter . "</i></p>
 
   <div style=\"overflow-x:auto;\">
     <table>
@@ -104,4 +131,23 @@
   </body>
   </html>";
 
+  $HTML = new domDocument;
+  $HTML->loadHTML($templateHTML);
+  $table = $HTML->getElementsByTagName('table');
+
+  echo $directory;
+  chdir($directory);
+
+  if ($recSearch) {
+    $sources = recursiveGlob($directory . "/", "*.php");
+  } else {
+    $sources = glob("*.php");
+    $sources = appendDirName($sources, $directory);
+  }
+
+  var_dump($sources);
+
+
+  echo $HTML->saveHTML();
+  return 0;
  ?>
