@@ -1,7 +1,7 @@
 .IPPcode18
 DEFVAR GF@a
 CREATEFRAME
-MOVE GF@a int@1
+MOVE GF@a int@-5
 WRITE GF@a
 DEFVAR TF@c
 MOVE TF@c GF@a
@@ -9,7 +9,7 @@ WRITE TF@c
 PUSHFRAME
 CREATEFRAME
 DEFVAR TF@c
-ADD TF@c LF@c GF@a
+MUL TF@c LF@c GF@a
 WRITE TF@c
 DEFVAR GF@count
 MOVE GF@count int@1
@@ -19,3 +19,9 @@ WRITE GF@count
 ADD GF@count  GF@count int@1
 JUMP LOOP
 LABEL end
+POPFRAME
+defVar TF@string
+MOVE TF@string string@tralala
+WRITE TF@string
+CONCAT TF@string TF@string string@LOLOLO
+WRITE TF@string

@@ -28,7 +28,7 @@
         $fileList = array_merge($fileList, $file);
     }
     return $fileList;
-  }
+}
 
   /// LOAD ARGUMENTS ///
 
@@ -135,11 +135,10 @@
   $HTML->loadHTML($templateHTML);
   $table = $HTML->getElementsByTagName('table');
 
-  echo $directory;
   chdir($directory);
 
   if ($recSearch) {
-    $sources = recursiveGlob($directory . "/", "*.php");
+    $sources = recursiveGlob(".", "/.*.php/");
   } else {
     $sources = glob("*.php");
     $sources = appendDirName($sources, $directory);
