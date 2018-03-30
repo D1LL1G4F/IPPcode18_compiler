@@ -101,7 +101,7 @@ class StackFrame():
         if self.empty:
             sys.stderr.write("ERROR 55: LF doesn't exist (empty stackframe)\n")
             sys.exit(55)
-        if self.stack.count() == 1:
+        if len(self.stack) == 1:
             self.empty = True
         return self.stack.pop()
 
@@ -128,7 +128,7 @@ class CallStack():
         if self.empty:
             sys.stderr.write("ERROR 56: Call stack is empty\n")
             sys.exit(56)
-        if self.stack.count() == 1:
+        if len(self.stack) == 1:
             self.empty = True
         return self.stack.pop()
 
@@ -149,7 +149,7 @@ class DataStack():
         if self.empty:
             sys.stderr.write("ERROR 56: Data stack is empty\n")
             sys.exit(56)
-        if self.stack.count() == 1:
+        if len(self.stack) == 1:
             self.empty = True
         return self.stack.pop()
 
@@ -653,7 +653,7 @@ def parseCall(instruction, interpreting):  # DONE
             sys.exit(32)
     else:
         global callstack
-        callstack.push(instructOrderNum)
+        callstack.push(instructOrderNum+1)
         label = instruction[0].text
         return labels[label]
 
