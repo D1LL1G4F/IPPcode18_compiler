@@ -138,9 +138,9 @@
   chdir($directory);
 
   if ($recSearch) {
-    $sources = recursiveGlob(".", "/.*.php/");
+    $sources = recursiveGlob(".", "/.*.\.php/");
   } else {
-    $sources = glob("*.php");
+    $sources = glob("*.php"); // TODO
     $sources = appendDirName($sources, $directory);
   }
 
