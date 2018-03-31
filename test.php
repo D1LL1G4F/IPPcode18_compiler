@@ -9,15 +9,7 @@
   $directory = getcwd();
   $recSearch = false;
   $parser = "parse.php";
-  $interpreter = "interpreter.py";
-
-  function appendDirName($array, $dirname) {
-    $newArray = $array;
-    foreach ($newArray as $key => $item) {
-      $newArray[$key] = $dirname . $item; //concatinate your existing array with new one
-    }
-    return $newArray;
-  }
+  $interpreter = "interpret.py";
 
   function recursiveGlob($folder, $pattern) {
     $dir = new RecursiveDirectoryIterator($folder);
@@ -28,7 +20,68 @@
         $fileList = array_merge($fileList, $file);
     }
     return $fileList;
-}
+  }
+
+  function getTestName($sourceCodeName){
+    return substr($sourceCodeName, 0, -4);
+  }
+
+  function generateOutputFiles($sources) {
+    global $parser;
+    global $interpreter;
+    global $returnCodes;
+    global $directory;
+    $outputs = array();
+
+
+    foreach ($sources as $source) {
+      $outFile = fopen(getTestName($source) . ".in","w");
+      $output = NULL;
+      $rc = NULL;
+      exec("php " . $parser . " < " . $source, $output, $rc); # TODO MERLIN
+      if ($rc == 0) {
+        $tmpFileName = tempnam($directory, "tmpXML");
+        $XML = fopen($tmpFileName, "w");
+        fwrite($XML, implode("\n", $output));
+        $output = array();
+        exec("python3.6 " . $interpreter . " --source=" . $tmpFileName, $output, $rc);
+        fclose($XML);
+        unlink($tmpFileName);
+        fwrite($outFile, implode("\n", $output));
+      }
+      fclose($outFile);
+
+      $returnCodes = array_merge($returnCodes, array($source => $rc));
+      $outputs  = array_merge($outputs, array($source => getTestName($source) . ".in"));
+    }
+    return $outputs;
+  }
+
+  function getRefFiles($sources) {
+    $refFiles = array();
+    foreach ($sources as $source) {
+      if (!file_exists(getTestName($source) . ".out")) {
+        $newfile = fopen(getTestName($source) . ".out","w");
+        fclose($newfile);
+      }
+      $refFiles  = array_merge($outputs, array($source => getTestName($source) . ".out"));
+    }
+    return $refFiles;
+  }
+
+  function getReturnCodes($sources) {
+    $rcFile = array();
+    foreach ($sources as $source) {
+      if (!file_exists(getTestName($source) . ".rc")) {
+        $newfile = fopen(getTestName($source) . ".rc","w");
+        fwrite($newfile, "0");
+        fclose($newfile);
+      }
+      $refFiles  = array_merge($outputs, array($source => getTestName($source) . ".rc"));
+    }
+    return $rcFile;
+  }
+
 
   /// LOAD ARGUMENTS ///
 
@@ -120,10 +173,14 @@
       <tr>
         <th>Test name</th>
         <th>Status</th>
+        <th>Return code</th>
+        <th>Expected return code</th>
       </tr>
       <tr>
         <td><font color=\"red\">test</font></td>
         <td><font color=\"red\">FAILED</font></td>
+        <td><font color=\"red\">rc</font></td>
+        <td><font color=\"red\">erc</font></td>
       </tr>
     </table>
   </div>
@@ -138,14 +195,17 @@
   chdir($directory);
 
   if ($recSearch) {
-    $sources = recursiveGlob(".", "/.*.\.php/");
+    $sources = recursiveGlob(".", "/.*.\.src/");
   } else {
-    $sources = glob("*.php"); // TODO
-    $sources = appendDirName($sources, $directory);
+    $sources = glob("*.src"); // TODO
   }
 
-  var_dump($sources);
+  $returnCodes = array();
+  $outputFiles = generateOutputFiles($sources);
+  $referenceFiles = getRefFiles($sources);
+  $referenceReturnCodes = getReturnCodes($sources);
 
+  
 
   echo $HTML->saveHTML();
   return 0;
