@@ -64,7 +64,7 @@
         $newfile = fopen(getTestName($source) . ".out","w");
         fclose($newfile);
       }
-      $refFiles  = array_merge($outputs, array($source => getTestName($source) . ".out"));
+      $refFiles  = array_merge($refFiles, array($source => getTestName($source) . ".out"));
     }
     return $refFiles;
   }
@@ -77,9 +77,19 @@
         fwrite($newfile, "0");
         fclose($newfile);
       }
-      $refFiles  = array_merge($outputs, array($source => getTestName($source) . ".rc"));
+      $rcFile  = array_merge($rcFile, array($source => getTestName($source) . ".rc"));
     }
     return $rcFile;
+  }
+
+  function execTest($test) {
+    global $returnCodes;
+    global $outputFiles;
+    global $referenceFiles;
+    global $referenceReturnCodes;
+    $output = NULL;
+    exec("diff " . $outputFiles[$test] . " " . $referenceFiles[$test], $output);
+    return $output == "" && $returnCodes[$test] == $referenceReturnCodes[$test];
   }
 
 
@@ -205,7 +215,18 @@
   $referenceFiles = getRefFiles($sources);
   $referenceReturnCodes = getReturnCodes($sources);
 
-  
+  foreach ($sources as $test) {
+    $testElem = $HTML->createElement("tr");
+    $testResult = execTest($test);
+    $color = $testResult ? "green" : "red";
+    $testName = $HTML->createElement("td");
+    $fontName = $HTML->createElement("font", getTestName($test));
+    $fontColor = $HTML->createAttribute("color");
+    $fontColor->value = $color;
+    $fontName->appendChild($fontColor);
+    $testName->appendChild($fontName);
+    $table[0]->appendChild($testName);
+  }
 
   echo $HTML->saveHTML();
   return 0;
