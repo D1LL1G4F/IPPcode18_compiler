@@ -77,7 +77,10 @@
         fwrite($newfile, "0");
         fclose($newfile);
       }
-      $rcFile  = array_merge($rcFile, array($source => getTestName($source) . ".rc"));
+      $file = fopen(getTestName($source) . ".rc", "r");
+      $content = fread($file, filesize(getTestName($source) . ".rc"));
+      $rcFile  = array_merge($rcFile, array($source => $content));
+      fclose($file);
     }
     return $rcFile;
   }
@@ -89,7 +92,22 @@
     global $referenceReturnCodes;
     $output = NULL;
     exec("diff " . $outputFiles[$test] . " " . $referenceFiles[$test], $output);
-    return $output == "" && $returnCodes[$test] == $referenceReturnCodes[$test];
+    return empty($output) && $returnCodes[$test] == $referenceReturnCodes[$test];
+  }
+
+  function createTableLine($color, $attribs) {
+    global $HTML;
+    $testElem = $HTML->createElement("tr");
+    foreach ($attribs as $attrib) {
+      $itemName = $HTML->createElement("td");
+      $fontName = $HTML->createElement("font", $attrib);
+      $fontColor = $HTML->createAttribute("color");
+      $fontColor->value = $color;
+      $fontName->appendChild($fontColor);
+      $itemName->appendChild($fontName);
+      $testElem->appendChild($itemName);
+    }
+    return $testElem;
   }
 
 
@@ -147,8 +165,6 @@
     }
   }
 
-  $parser = $directory . "/" . $parser;
-  $interpreter = $directory . "/" . $interpreter;
   $recOptionStr = $recSearch ? "yes" : "no";
   /// END OF GETOPTS PARSER ////
 
@@ -186,12 +202,6 @@
         <th>Return code</th>
         <th>Expected return code</th>
       </tr>
-      <tr>
-        <td><font color=\"red\">test</font></td>
-        <td><font color=\"red\">FAILED</font></td>
-        <td><font color=\"red\">rc</font></td>
-        <td><font color=\"red\">erc</font></td>
-      </tr>
     </table>
   </div>
 
@@ -201,6 +211,7 @@
   $HTML = new domDocument;
   $HTML->loadHTML($templateHTML);
   $table = $HTML->getElementsByTagName('table');
+  $body = $HTML->getElementsByTagName('body');
 
   chdir($directory);
 
@@ -214,19 +225,31 @@
   $outputFiles = generateOutputFiles($sources);
   $referenceFiles = getRefFiles($sources);
   $referenceReturnCodes = getReturnCodes($sources);
+  $total = 0;
+  $success = 0;
 
   foreach ($sources as $test) {
+    $total++;
     $testElem = $HTML->createElement("tr");
     $testResult = execTest($test);
     $color = $testResult ? "green" : "red";
-    $testName = $HTML->createElement("td");
-    $fontName = $HTML->createElement("font", getTestName($test));
-    $fontColor = $HTML->createAttribute("color");
-    $fontColor->value = $color;
-    $fontName->appendChild($fontColor);
-    $testName->appendChild($fontName);
-    $table[0]->appendChild($testName);
+    $success += $testResult ? 1 : 0;
+    $attribs = [getTestName($test), $testResult ? "OK" : "FAILED", $returnCodes[$test], $referenceReturnCodes[$test]];
+    $table[0]->appendChild(createTableLine($color, $attribs));
   }
+  if ($total > 0) {
+    $percentage = ($success / $total)*100;
+  } else {
+    $percentage = 0;
+  }
+
+  $stats = $HTML->createElement("h3", "Statistics:");
+  $succ = $HTML->createElement("p", "successfull tests: " . (string)$success . "/" . (string)$total);
+  $perc = $HTML->createElement("p", "percentage: " . (string)$percentage . "%");
+
+  $body[0]->appendChild($stats);
+  $body[0]->appendChild($succ);
+  $body[0]->appendChild($perc);
 
   echo $HTML->saveHTML();
   return 0;
