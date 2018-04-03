@@ -1079,7 +1079,7 @@ def parseWrite(instruction, interpreting):
     else:
         arg1 = instruction[0]
         arg1Value = getSymbVal(arg1)
-        print(arg1Value)
+        print(arg1Value, "\n")
         return instructOrderNum+1
 
 
@@ -1198,8 +1198,8 @@ def parseSetchar(instruction, interpreting):
                         sys.exit(58)
                     setVariable(arg1Frame, arg1Name, "string", varString)
                 else:
-                    sys.stderr.write("ERROR 53: invalid value in instruction n"
-                                     "umber: {} (arg3 string can't be empty)"
+                    sys.stderr.write("ERROR 58: invalid value in instruction n"
+                                     "umber: {} (arg3 string can't be empty)\n"
                                      .format(instructOrderNum))
                     sys.exit(58)
             else:

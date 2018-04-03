@@ -47,7 +47,7 @@
         exec("python3.6 " . $interpreter . " --source=" . $tmpFileName, $output, $rc);
         fclose($XML);
         unlink($tmpFileName);
-        fwrite($outFile, implode("\n", $output));
+        fwrite($outFile, implode("", $output)."\n");
       }
       fclose($outFile);
 
@@ -91,8 +91,10 @@
     global $referenceFiles;
     global $referenceReturnCodes;
     $output = NULL;
+    if ($returnCodes[$test] == $referenceReturnCodes[$test] && $returnCodes[$test] != 0)
+      return True;
     exec("diff " . $outputFiles[$test] . " " . $referenceFiles[$test], $output);
-    return empty($output) && $returnCodes[$test] == $referenceReturnCodes[$test];
+    return (empty($output)) && ($returnCodes[$test] == $referenceReturnCodes[$test]);
   }
 
   function createTableLine($color, $attribs) {
