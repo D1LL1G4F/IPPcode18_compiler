@@ -47,7 +47,7 @@
         exec("python3.6 " . $interpreter . " --source=" . $tmpFileName, $output, $rc);
         fclose($XML);
         unlink($tmpFileName);
-        fwrite($outFile, implode("", $output)."\n");
+        fwrite($outFile, implode("\n", $output)."\n");
       }
       fclose($outFile);
 

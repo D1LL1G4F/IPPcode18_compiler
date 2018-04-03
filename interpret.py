@@ -2,6 +2,7 @@ import sys
 import argparse
 import os
 import math
+import re
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
 from copy import deepcopy
@@ -521,6 +522,28 @@ def setVariable(varFrame, varName, constType, constValue):
         sys.exit(32)
 
 
+def extractString(rawString):  # TODO int conversion
+    cnt = 0
+    strLength = len(rawString)
+    finalStr = ""
+
+    while cnt < strLength:
+        c = rawString[cnt]
+        if c == '\\':
+            if cnt+3 < strLength:
+                escape = rawString[cnt+1:cnt+4]
+                print(int(escape))
+                finalStr += str(chr(int(escape)))
+                cnt = cnt + 3
+            else:
+                sys.stderr.write("ERROR\n")
+                sys.exit(1)
+        else:
+            finalStr += c
+        cnt = cnt + 1
+    return finalStr
+
+
 def getSymbVal(arg):
     arg2Type = arg.attrib.get("type")
     if arg2Type == "var":
@@ -535,8 +558,10 @@ def getSymbVal(arg):
                              " (supposed to be integer)\n")
             sys.exit(32)
         return integerval
-    else:
+    elif arg2Type == "bool":
         return arg.text
+    else:
+        return extractString(arg.text)
 
 
 def getSymbType(arg):
@@ -1079,7 +1104,7 @@ def parseWrite(instruction, interpreting):
     else:
         arg1 = instruction[0]
         arg1Value = getSymbVal(arg1)
-        print(arg1Value, "\n")
+        print(arg1Value)
         return instructOrderNum+1
 
 
