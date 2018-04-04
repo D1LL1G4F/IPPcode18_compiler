@@ -167,6 +167,14 @@ def argumentsHadling():
     parser = argparse.ArgumentParser(prog="interpret.py", add_help=True)
     parser.add_argument("--source", required=True, nargs=1, metavar="FILE",
                         help="input file with XML representation of src code")
+    parser.add_argument("--stats", required=False, nargs=1, metavar="FILE",
+                        help="exports statistics of interpretation into FILE")
+    parser.add_argument("--insts", required=False, nargs=0, dest='stats',
+                        action='append_const', const="insts",
+                        help="(must be combined with --stats) num of instruct")
+    parser.add_argument("--vars", required=False, nargs=0, dest='stats',
+                        action='append_const', const="vars",
+                        help="(must be combined with --stats) num of vars")
     try:
         args = parser.parse_args()
     except SystemExit:
@@ -297,7 +305,7 @@ def getVarFrame(rawVar):
 def getVarName(rawVar):  # TODO correct name validation
     varFrame = rawVar[2:]
     if varFrame[0] == "@":
-        return varFrame[1:]
+        return variablename
     else:
         sys.stderr.write("ERROR 32: invalid format of variable \"{}\""
                          "\n".format(rawVar))
@@ -329,16 +337,22 @@ def verifyType(arg, instructOrderNum):
         sys.exit(32)
 
 
-def verifyString(str):  # TODO
+def verifyString(str):
     pass
 
 
-def verifyInt(str):  # TODO
-    pass
+def verifyInt(intgr):
+    try:
+        int(intgr)
+    except Exception:
+        sys.stderr.write("ERROR 32: wrong format of int constant\n")
+        sys.exit(32)
 
 
-def verifyBoolean(str):  # TODO
-    pass
+def verifyBoolean(str):
+    if str != "false" and str != "true":
+        sys.stderr.write("ERROR 32: invalid bool value\n")
+        sys.exit(32)
 
 
 def strToBool(str):
