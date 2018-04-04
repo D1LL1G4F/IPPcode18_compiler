@@ -161,6 +161,7 @@ labels = {}
 callstack = CallStack()
 datastack = DataStack()
 instructCount = 0
+initVarsCount = 0
 
 
 def argumentsHadling():
@@ -169,10 +170,10 @@ def argumentsHadling():
                         help="input file with XML representation of src code")
     parser.add_argument("--stats", required=False, nargs=1, metavar="FILE",
                         help="exports statistics of interpretation into FILE")
-    parser.add_argument("--insts", required=False, nargs=0, dest='stats',
+    parser.add_argument("--insts", required=False, dest="statsp",
                         action='append_const', const="insts",
                         help="(must be combined with --stats) num of instruct")
-    parser.add_argument("--vars", required=False, nargs=0, dest='stats',
+    parser.add_argument("--vars", required=False, dest="statsp",
                         action='append_const', const="vars",
                         help="(must be combined with --stats) num of vars")
     try:
@@ -180,6 +181,13 @@ def argumentsHadling():
     except SystemExit:
         sys.stderr.write("ERROR 10: Wrong arguments\n")
         sys.exit(10)
+
+    if args.stats is None:
+        if args.statsp is None:
+            pass
+        else:
+            sys.stderr.write("ERROR 10: missing --stats=file argument\n")
+            sys.exit(10)
 
     return args
 
@@ -305,7 +313,7 @@ def getVarFrame(rawVar):
 def getVarName(rawVar):  # TODO correct name validation
     varFrame = rawVar[2:]
     if varFrame[0] == "@":
-        return variablename
+        return rawVar[3:]
     else:
         sys.stderr.write("ERROR 32: invalid format of variable \"{}\""
                          "\n".format(rawVar))
@@ -508,6 +516,8 @@ def getVarType(frame, name):
 
 
 def setVariable(varFrame, varName, constType, constValue):
+    global initVarsCount
+    initVarsCount += 1
     if varFrame == "GF":
         global GF
         newVar = Variable(varName, constType, constValue)
@@ -1574,6 +1584,18 @@ def interpretInstruction(instruction):
     return opcodeParser[opcode](instruction, True)
 
 
+def statsDump(args):
+    if args.stats is not None:
+        fileName = ''.join(args.stats)
+        file = open(fileName, 'w')
+        for stat in args.statsp:
+            if stat == "vars":
+                file.write("{}\n".format(initVarsCount))
+            if stat == "insts":
+                file.write("{}\n".format(instructCount))
+        file.close()
+
+
 def main():
     args = argumentsHadling()  # parsing of argiments
     fileName = ''.join(args.source)
@@ -1596,6 +1618,8 @@ def main():
         instruction = lookUpInstuct(nextInstructionNumber, program)
         global instructCount
         instructCount += 1
+
+    statsDump(args)
 
 
 if __name__ == '__main__':
