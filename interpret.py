@@ -2,7 +2,6 @@ import sys
 import argparse
 import os
 import math
-import re
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ParseError
 from copy import deepcopy
@@ -27,9 +26,9 @@ class Variable():
                 sys.exit(32)
         elif type == "bool":
             if value == "true":
-                self.value = True
+                self.value = value
             elif value == "false":
-                self.value = False
+                self.value = value
             else:
                 sys.stderr.write("ERROR 32: value of variable \"{}\" is wrong"
                                  " (supposed to be boolean)\n".format(name))
@@ -161,6 +160,7 @@ stackframe = StackFrame()
 labels = {}
 callstack = CallStack()
 datastack = DataStack()
+instructCount = 0
 
 
 def argumentsHadling():
@@ -522,7 +522,7 @@ def setVariable(varFrame, varName, constType, constValue):
         sys.exit(32)
 
 
-def extractString(rawString):  # TODO int conversion
+def extractString(rawString):
     cnt = 0
     strLength = len(rawString)
     finalStr = ""
@@ -532,12 +532,24 @@ def extractString(rawString):  # TODO int conversion
         if c == '\\':
             if cnt+3 < strLength:
                 escape = rawString[cnt+1:cnt+4]
-                print(int(escape))
-                finalStr += str(chr(int(escape)))
+                try:
+                    ord = int(escape)
+                except Exception:
+                    sys.stderr.write("ERROR 32: wrong escape sequence format i"
+                                     "n string: {}\n".format(rawString))
+                    sys.exit(32)
+                try:
+                    finalStr += str(chr(ord))
+                except ValueError:
+                    sys.stderr.write("ERROR 32: cannot covert to ascii escap"
+                                     "e sequence in string: {}\n"
+                                     .format(rawString))
+                    sys.exit(32)
                 cnt = cnt + 3
             else:
-                sys.stderr.write("ERROR\n")
-                sys.exit(1)
+                sys.stderr.write("ERROR 32: wrong escape sequence format i"
+                                 "n string: {}\n".format(rawString))
+                sys.exit(32)
         else:
             finalStr += c
         cnt = cnt + 1
@@ -1212,10 +1224,10 @@ def parseSetchar(instruction, interpreting):
         arg3Value = getSymbVal(arg3)
         if getVarType(arg1Frame, arg1Name) == "string":
             if arg2Type == "int" and arg3Type == "string":
-                if len(arg3Value) < 1:
+                if len(arg3Value) > 0:
                     varString = getVarValue(arg1Frame, arg1Name)
                     try:
-                        varString[arg2Value] = arg3Value[0]
+                        varString = varString[:arg2Value] + arg3Value[0] + varString[1 + arg2Value:]
                     except IndexError:
                         sys.stderr.write("ERROR 58: indexing out of string in "
                                          "instruction number: {}"
@@ -1223,6 +1235,8 @@ def parseSetchar(instruction, interpreting):
                         sys.exit(58)
                     setVariable(arg1Frame, arg1Name, "string", varString)
                 else:
+                    print(arg3Value)
+                    print("-")
                     sys.stderr.write("ERROR 58: invalid value in instruction n"
                                      "umber: {} (arg3 string can't be empty)\n"
                                      .format(instructOrderNum))
@@ -1429,6 +1443,7 @@ def parseDprint(instruction, interpreting):
     else:
         arg1 = instruction[0]
         sys.stderr.write(getSymbVal(arg1))
+        sys.stderr.write("\n")
         return instructOrderNum+1
 
 
@@ -1447,14 +1462,17 @@ def parseBreak(instruction, interpreting):
             LF = stackframe.getLF()
             LFvar = LF.variable
             LFdef = LF.defined
-        sys.stderr.write("instruction number: {}\n"
+        global instructCount
+        sys.stderr.write("instructions proceeded: {}\n"
+                         "instruction number: {}\n"
                          "GF defined: {}\n"
                          "GF variables: {}\n"
                          "TF defined: {}\n"
                          "TF variables: {}\n"
                          "LF defined: {}\n"
                          "LF variables: {}\n"
-                         .format(instructOrderNum, str(GF.defined),
+                         .format(instructCount, instructOrderNum,
+                                 str(GF.defined),
                                  str(GF.variable), str(TF.defined),
                                  str(TF.variable), str(LFdef),
                                  str(LFvar)))
@@ -1562,6 +1580,8 @@ def main():
     while (instruction is not None):
         nextInstructionNumber = interpretInstruction(instruction)
         instruction = lookUpInstuct(nextInstructionNumber, program)
+        global instructCount
+        instructCount += 1
 
 
 if __name__ == '__main__':
