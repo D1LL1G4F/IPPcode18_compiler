@@ -179,6 +179,8 @@ def argumentsHadling():
     try:
         args = parser.parse_args()
     except SystemExit:
+        if len(sys.argv) == 2 and sys.argv[1] == "--help":
+            sys.exit(0)
         sys.stderr.write("ERROR 10: Wrong arguments\n")
         sys.exit(10)
 
