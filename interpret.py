@@ -1118,21 +1118,21 @@ def parseRead(instruction, interpreting):
         arg1Name = getVarName(arg1.text)
         type = arg2.text
         if type == "int":
-            input = input()
+            inpt = input()
             try:
-                value = int(input)
+                value = int(inpt)
             except Exception:
                 value = 0
             setVariable(arg1Frame, arg1Name, "int", value)
         if type == "bool":
-            input = input()
-            if input.lower() == "true":
+            inpt = input()
+            if inpt.lower() == "true":
                 setVariable(arg1Frame, arg1Name, "bool", "true")
             else:
                 setVariable(arg1Frame, arg1Name, "bool", "false")
         if type == "string":
-            input = input()
-            setVariable(arg1Frame, arg1Name, "string", input)
+            inpt = input()
+            setVariable(arg1Frame, arg1Name, "string", inpt)
         return instructOrderNum+1
 
 
