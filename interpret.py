@@ -550,6 +550,8 @@ def setVariable(varFrame, varName, constType, constValue):
 
 def extractString(rawString):
     cnt = 0
+    if rawString is None:
+        return ""
     strLength = len(rawString)
     finalStr = ""
 
@@ -922,7 +924,7 @@ def parseGt(instruction, interpreting):
         arg3Type = getSymbType(arg3)
         arg3Value = getSymbVal(arg3)
         if arg2Type == arg3Type:
-            result = arg2Value < arg3Value
+            result = arg2Value > arg3Value
             setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
