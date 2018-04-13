@@ -614,7 +614,7 @@ def getSymbType(arg):
         return arg2Type
 
 
-def parseMove(instruction, interpreting):  # DONE
+def parseMove(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 2)
@@ -631,7 +631,7 @@ def parseMove(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parseCreateframe(instruction, interpreting):  # DONE
+def parseCreateframe(instruction, interpreting):
     if interpreting is False:
         checkArgFormat(instruction, 0)
     else:
@@ -645,7 +645,7 @@ def parseCreateframe(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parsePushframe(instruction, interpreting):  # DONE
+def parsePushframe(instruction, interpreting):
     if interpreting is False:
         checkArgFormat(instruction, 0)
     else:
@@ -657,7 +657,7 @@ def parsePushframe(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parsePopframe(instruction, interpreting):  # DONE
+def parsePopframe(instruction, interpreting):
     if interpreting is False:
         checkArgFormat(instruction, 0)
     else:
@@ -668,7 +668,7 @@ def parsePopframe(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parseDefvar(instruction, interpreting):  # DONE
+def parseDefvar(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 1)
@@ -691,7 +691,7 @@ def parseDefvar(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parseCall(instruction, interpreting):  # DONE
+def parseCall(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     global labels
     if interpreting is False:
@@ -723,7 +723,7 @@ def parseCall(instruction, interpreting):  # DONE
         return labels[label]
 
 
-def parseReturn(instruction, interpreting):  # DONE
+def parseReturn(instruction, interpreting):
     if interpreting is False:
         checkArgFormat(instruction, 0)
     else:
@@ -731,7 +731,7 @@ def parseReturn(instruction, interpreting):  # DONE
         return callstack.pop()
 
 
-def parsePushs(instruction, interpreting):  # DONE
+def parsePushs(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 1)
@@ -746,7 +746,7 @@ def parsePushs(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parsePops(instruction, interpreting):  # DONE
+def parsePops(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 1)
@@ -761,7 +761,7 @@ def parsePops(instruction, interpreting):  # DONE
         return instructOrderNum+1
 
 
-def parseAdd(instruction, interpreting):  # DONE
+def parseAdd(instruction, interpreting):
     instructOrderNum = int(instruction.attrib.get("order"))
     if interpreting is False:
         checkArgFormat(instruction, 3)
@@ -783,7 +783,7 @@ def parseAdd(instruction, interpreting):  # DONE
             setVariable(arg1Frame, arg1Name, arg2Type, result)
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must be integers)"
+                             "umber: {} (both operands must be integers)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -811,7 +811,7 @@ def parseSub(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, arg2Type, result)
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must be integers)"
+                             "umber: {} (both operands must be integers)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -839,7 +839,7 @@ def parseMul(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, arg2Type, result)
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must be integers)"
+                             "umber: {} (both operands must be integers)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -865,14 +865,14 @@ def parseIdiv(instruction, interpreting):
         if arg2Type == "int" and arg2Type == arg3Type:
             if arg3Value == 0:
                 sys.stderr.write("ERROR 57: division by zero in instruction n"
-                                 "umber: {}"
+                                 "umber: {}\n"
                                  .format(instructOrderNum))
                 sys.exit(57)
             result = arg2Value // arg3Value
             setVariable(arg1Frame, arg1Name, arg2Type, result)
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must be integers)"
+                             "umber: {} (both operands must be integers)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -900,7 +900,7 @@ def parseLt(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must have same type)"
+                             "umber: {} (both operands must have same type)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -928,7 +928,7 @@ def parseGt(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must have same type)"
+                             "umber: {} (both operands must have same type)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -956,7 +956,7 @@ def parseEq(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must have same type)"
+                             "umber: {} (both operands must have same type)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -984,7 +984,7 @@ def parseAnd(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must be bool)"
+                             "umber: {} (both operands must be bool)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1012,7 +1012,7 @@ def parseOr(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must be bool)"
+                             "umber: {} (both operands must be bool)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1036,7 +1036,7 @@ def parseNot(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, "bool", boolToStr(result))
         else:
             sys.stderr.write("ERROR 53: invalid operand type in instruction n"
-                             "umber: {} (operand must be bool)"
+                             "umber: {} (operand must be bool)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1060,12 +1060,12 @@ def parseInt2char(instruction, interpreting):
                 character = chr(arg2Value)
             except ValueError:
                 sys.stderr.write("ERROR 58: invalid UNICODE value in operation"
-                                 " number: {}" .format(instructOrderNum))
+                                 " number: {}\n" .format(instructOrderNum))
                 sys.exit(58)
             setVariable(arg1Frame, arg1Name, "string", str(character))
         else:
             sys.stderr.write("ERROR 53: invalid operand type in instruction n"
-                             "umber: {} (operand must be int)"
+                             "umber: {} (operand must be int)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1093,13 +1093,13 @@ def parseStri2int(instruction, interpreting):
                 ordCharValue = ord(arg2Value[arg3Value])
             except IndexError:
                 sys.stderr.write("ERROR 58: indexing out of string in instruct"
-                                 "ion number: {}"
+                                 "ion number: {}\n"
                                  .format(instructOrderNum))
                 sys.exit(58)
             setVariable(arg1Frame, arg1Name, "int", ordCharValue)
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (symb1 = string, symb2 = int)"
+                             "umber: {} (symb1 = string, symb2 = int)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1170,7 +1170,7 @@ def parseConcat(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, arg2Type, result)
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (both operands must have type string)"
+                             "umber: {} (both operands must have type str)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1193,7 +1193,7 @@ def parseStrlen(instruction, interpreting):
             setVariable(arg1Frame, arg1Name, "int", len(arg2Value))
         else:
             sys.stderr.write("ERROR 53: invalid operand type in instruction n"
-                             "umber: {} (arg2 must be string)"
+                             "umber: {} (arg2 must be string)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1221,13 +1221,13 @@ def parseGetchar(instruction, interpreting):
                 character = arg2Value[arg3Value]
             except IndexError:
                 sys.stderr.write("ERROR 58: indexing out of string in instruct"
-                                 "ion number: {}"
+                                 "ion number: {}\n"
                                  .format(instructOrderNum))
                 sys.exit(58)
             setVariable(arg1Frame, arg1Name, "string", str(character))
         else:
             sys.stderr.write("ERROR 53: invalid operand types in instruction n"
-                             "umber: {} (arg2 must be string and arg3 int)"
+                             "umber: {} (arg2 must be string and arg3 int)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
@@ -1255,12 +1255,13 @@ def parseSetchar(instruction, interpreting):
                 if len(arg3Value) > 0:
                     varString = getVarValue(arg1Frame, arg1Name)
                     try:
-                        varString = varString[:arg2Value] + arg3Value[0] + varString[1 + arg2Value:]
+                        varString[arg2Value]
                     except IndexError:
                         sys.stderr.write("ERROR 58: indexing out of string in "
-                                         "instruction number: {}"
+                                         "instruction number: {}\n"
                                          .format(instructOrderNum))
                         sys.exit(58)
+                    varString = varString[:arg2Value] + arg3Value[0] + varString[1 + arg2Value:]
                     setVariable(arg1Frame, arg1Name, "string", varString)
                 else:
                     print(arg3Value)
@@ -1272,11 +1273,11 @@ def parseSetchar(instruction, interpreting):
             else:
                 sys.stderr.write("ERROR 53: invalid operand type in instructio"
                                  "n number: {} (arg2 must be int and ar3g stri"
-                                 "ng".format(instructOrderNum))
+                                 "ng\n".format(instructOrderNum))
                 sys.exit(53)
         else:
             sys.stderr.write("ERROR 53: invalid operand type in instruction n"
-                             "umber: {} (variable in arg1 must be string)"
+                             "umber: {} (variable in arg1 must be string)\n"
                              .format(instructOrderNum))
             sys.exit(53)
         return instructOrderNum+1
