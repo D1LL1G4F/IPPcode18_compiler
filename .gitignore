@@ -1,0 +1,9 @@
+*.src
+*.xml
+*.in
+*.err
+*.out
+*.rc
+*.hmtl
+*.zip
+*.txt

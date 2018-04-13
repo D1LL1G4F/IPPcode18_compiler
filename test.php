@@ -31,20 +31,20 @@
     global $interpreter;
     global $returnCodes;
     global $directory;
+    global $inputFiles;
     $outputs = array();
 
-
     foreach ($sources as $source) {
-      $outFile = fopen(getTestName($source) . ".in","w");
+      $outFile = fopen(getTestName($source) . "My.out","w");
       $output = NULL;
       $rc = NULL;
-      exec("php " . $parser . " < " . $source, $output, $rc); # TODO MERLIN
+      exec("php " . $parser . " < " . $source, $output, $rc); // TODO merlin
       if ($rc == 0) {
         $tmpFileName = tempnam($directory, "tmpXML");
         $XML = fopen($tmpFileName, "w");
         fwrite($XML, implode("\n", $output));
         $output = array();
-        exec("python3.6 " . $interpreter . " --source=" . $tmpFileName, $output, $rc);
+        exec("python3.6 " . $interpreter . " --source=" . $tmpFileName . " < " . $inputFiles[$source] . " 2> " . getTestName($source) . ".err" , $output, $rc);
         fclose($XML);
         unlink($tmpFileName);
         fwrite($outFile, implode("\n", $output)."\n");
@@ -52,7 +52,7 @@
       fclose($outFile);
 
       $returnCodes = array_merge($returnCodes, array($source => $rc));
-      $outputs  = array_merge($outputs, array($source => getTestName($source) . ".in"));
+      $outputs  = array_merge($outputs, array($source => getTestName($source) . "My.out"));
     }
     return $outputs;
   }
@@ -67,6 +67,18 @@
       $refFiles  = array_merge($refFiles, array($source => getTestName($source) . ".out"));
     }
     return $refFiles;
+  }
+
+  function getInFiles($sources) {
+    $inFiles = array();
+    foreach ($sources as $source) {
+      if (!file_exists(getTestName($source) . ".in")) {
+        $newfile = fopen(getTestName($source) . ".in","w");
+        fclose($newfile);
+      }
+      $inFiles  = array_merge($inFiles, array($source => getTestName($source) . ".in"));
+    }
+    return $inFiles;
   }
 
   function getReturnCodes($sources) {
@@ -224,6 +236,7 @@
   }
 
   $returnCodes = array();
+  $inputFiles = getInFiles($sources);
   $outputFiles = generateOutputFiles($sources);
   $referenceFiles = getRefFiles($sources);
   $referenceReturnCodes = getReturnCodes($sources);
