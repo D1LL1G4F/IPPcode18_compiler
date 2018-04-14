@@ -312,7 +312,7 @@ def getVarFrame(rawVar):
         sys.exit(32)
 
 
-def getVarName(rawVar):  # TODO correct name validation
+def getVarName(rawVar):
     varFrame = rawVar[2:]
     if varFrame[0] == "@":
         return rawVar[3:]
@@ -488,9 +488,9 @@ def getVarType(frame, name):
                                  .format(name))
                 sys.exit(54)
         else:
-            sys.stderr.write("ERROR 54: accessing variable: \"{}\" from"
+            sys.stderr.write("ERROR 55: accessing variable: \"{}\" from"
                              " undefined frame\n".format(name))
-            sys.exit(54)
+            sys.exit(55)
     elif frame == "LF":
         global stackframe
         LF = stackframe.getLF()
@@ -508,15 +508,21 @@ def getVarType(frame, name):
                                  .format(name))
                 sys.exit(54)
         else:
-            sys.stderr.write("ERROR 54: accessing variable: \"{}\" from"
+            sys.stderr.write("ERROR 55: accessing variable: \"{}\" from"
                              " undefined frame\n".format(name))
-            sys.exit(54)
+            sys.exit(55)
     else:
         sys.stderr.write("ERROR in getVarValue() that should never occur :/")
         sys.exit(32)
     return type
 
 
+# set up variable on frame "varFrame" with name "varName" on type "constType"
+# with value "constValue"
+# first arg: is frame of target variable in string format (GF/LF/TF)
+# second arg: is name of target varibale in string format
+# third arg: is type of value to be set in string format (int/string/bool)
+# third arg: is desired value in string format
 def setVariable(varFrame, varName, constType, constValue):
     global initVarsCount
     initVarsCount += 1
@@ -530,9 +536,9 @@ def setVariable(varFrame, varName, constType, constValue):
             newVar = Variable(varName, constType, constValue)
             TF.setVar(newVar)
         else:
-            sys.stderr.write("ERROR 54: accessing variable: \"{}\" from"
+            sys.stderr.write("ERROR 55: accessing variable: \"{}\" from"
                              " undefined frame\n".format(varName))
-            sys.exit(54)
+            sys.exit(55)
     elif varFrame == "LF":
         global stackframe
         LF = stackframe.getLF()
@@ -540,14 +546,15 @@ def setVariable(varFrame, varName, constType, constValue):
             newVar = Variable(varName, constType, constValue)
             LF.setVar(newVar)
         else:
-            sys.stderr.write("ERROR 54: accessing variable: \"{}\" from"
+            sys.stderr.write("ERROR 55: accessing variable: \"{}\" from"
                              " undefined frame\n".format(varName))
-            sys.exit(54)
+            sys.exit(55)
     else:
         sys.stderr.write("ERROR in setVarValue() that should never occur :/")
         sys.exit(32)
 
 
+# transform string to output compatible (remove escape seq. etc.)
 def extractString(rawString):
     cnt = 0
     if rawString is None:
@@ -555,7 +562,7 @@ def extractString(rawString):
     strLength = len(rawString)
     finalStr = ""
 
-    while cnt < strLength:
+    while cnt < strLength:  # transformation of escape sequences
         c = rawString[cnt]
         if c == '\\':
             if cnt+3 < strLength:
@@ -584,6 +591,7 @@ def extractString(rawString):
     return finalStr
 
 
+# get argument value of Symb
 def getSymbVal(arg):
     arg2Type = arg.attrib.get("type")
     if arg2Type == "var":
@@ -604,6 +612,7 @@ def getSymbVal(arg):
         return extractString(arg.text)
 
 
+# get argument type of Symb
 def getSymbType(arg):
     arg2Type = arg.attrib.get("type")
     if arg2Type == "var":
@@ -1508,6 +1517,7 @@ def parseBreak(instruction, interpreting):
         return instructOrderNum+1
 
 
+# goes through program and loads all labels to global labels
 def loadLabels(program):
     global labels
     for instruction in program:
@@ -1537,6 +1547,10 @@ def loadLabels(program):
                 sys.exit(32)
 
 
+# determine which parsing function should be called based on OpCode
+# first agrument: instruction of program in XML format
+# second argument: bool value whenever instruction should be interpretated or
+#                  just checked
 opcodeParser = {
      "MOVE": parseMove,
      "CREATEFRAME": parseCreateframe,
@@ -1575,20 +1589,23 @@ opcodeParser = {
 }
 
 
+# pre-runtime parsing istruction
 def verifyInstruct(instruct):
     opcode = instruct.attrib.get("opcode")
     if opcode in opcodeParser:
-        opcodeParser[opcode](instruct, False)
+        opcodeParser[opcode](instruct, False)  # call parsing function without interpretation
     else:
         sys.stderr.write("ERROR 32: Unknown opcode \"{}\"\n".format(opcode))
         sys.exit(32)
 
 
+# runtime interpretation
 def interpretInstruction(instruction):
     opcode = instruction.attrib.get("opcode")
-    return opcodeParser[opcode](instruction, True)
+    return opcodeParser[opcode](instruction, True)  # call parsing function with interpretation
 
 
+# STATS extension dump
 def statsDump(args):
     if args.stats is not None:
         fileName = ''.join(args.stats)
@@ -1602,14 +1619,14 @@ def statsDump(args):
 
 
 def main():
-    args = argumentsHadling()  # parsing of argiments
-    fileName = ''.join(args.source)
+    args = argumentsHadling()  # parsing of arguments
+    fileName = ''.join(args.source)  # load source file name
     file = openFile(fileName)  # open file
     program = parseFile(file).getroot()  # get root from XML file
 
     checkProgramFormatting(program)  # check valid tags/args of prog and instr.
 
-    loadLabels(program)
+    loadLabels(program)  # go through all labal and load them to global labels
 
     # pre-runtime verification of program
     for instruct in program:
@@ -1624,7 +1641,7 @@ def main():
         global instructCount
         instructCount += 1
 
-    statsDump(args)
+    statsDump(args)  # if argument STATS is set dump stats fo file
 
 
 if __name__ == '__main__':
