@@ -1,3 +1,13 @@
+# ######### school project for subject IPP ###########
+#
+# project name: IPPcode18 interpret
+#
+# author: Matej Knazik
+# login: xknazi00
+# email: xknazi00@fit.vutbr.cz
+# ####################################################
+
+
 import sys
 import argparse
 import os
@@ -7,6 +17,8 @@ from xml.etree.ElementTree import ParseError
 from copy import deepcopy
 
 
+# class for initializing new variable with name specified type and value
+# note: string and bool are represented as strings only int is as int
 class Variable():
     name = None
     type = None
@@ -39,6 +51,7 @@ class Variable():
             sys.exit(32)
 
 
+# class for frames
 class Frame():
     variable = None
     defined = None
@@ -47,6 +60,7 @@ class Frame():
         self.variable = {}
         self.defined = status
 
+    # define varibale in frame
     def defVar(self, name):
         if self.defined:
             self.variable[name] = None
@@ -63,9 +77,11 @@ class Frame():
         else:
             return True
 
+    # get variable by its name
     def getVar(self, varName):
         return self.variable[varName]
 
+    # set variable
     def setVar(self, var):
         if var.name in self.variable:
             self.variable[var.name] = var
@@ -74,14 +90,17 @@ class Frame():
                              "\n".format(var.name))
             sys.exit(54)
 
+    # clear frame and set it as unitialized
     def reset(self):
         self.variable.clear()
         self.defined = False
 
+    # initailize frame
     def define(self):
         self.defined = True
 
 
+# stackframe for with access on most top frame (LF) with method getLF()
 class StackFrame():
     stack = None
     empty = None
@@ -112,6 +131,7 @@ class StackFrame():
         return self.stack[-1]
 
 
+# call stack for instruction CALL and RETURN
 class CallStack():
     stack = None
     empty = None
@@ -133,6 +153,7 @@ class CallStack():
         return self.stack.pop()
 
 
+# data stack for instructions PUSHS and POPS
 class DataStack():
     stack = None
     empty = None
@@ -154,6 +175,7 @@ class DataStack():
         return self.stack.pop()
 
 
+# initialization of global variables
 GF = Frame(True)
 TF = Frame(False)
 stackframe = StackFrame()
@@ -164,7 +186,7 @@ instructCount = 0
 initVarsCount = 0
 
 
-def argumentsHadling():
+def argumentsHandling():
     parser = argparse.ArgumentParser(prog="interpret.py", add_help=True)
     parser.add_argument("--source", required=True, nargs=1, metavar="FILE",
                         help="input file with XML representation of src code")
@@ -223,6 +245,7 @@ def checkTag(element, tag):
     return
 
 
+# check proper XML format of program
 def checkProgramFormatting(program):
     checkTag(program, "program")
     if (len(program.attrib) < 1):
@@ -256,6 +279,7 @@ def checkProgramFormatting(program):
             sys.exit(31)
 
 
+# check if instriction has expected number of arguments
 def checkArgFormat(instruct, numOfArgs):
     cnt = 0
     for arg in instruct:
@@ -297,6 +321,7 @@ def lookUpInstuct(instructionNumber, program):
         return followingInstruction
 
 
+# get frame of variable from raw format
 def getVarFrame(rawVar):
     possibleFrames = ["GF", "LF", "TF"]
     if len(rawVar) < 4:
@@ -312,6 +337,7 @@ def getVarFrame(rawVar):
         sys.exit(32)
 
 
+# get name of variable from raw format
 def getVarName(rawVar):
     varFrame = rawVar[2:]
     if varFrame[0] == "@":
@@ -322,6 +348,7 @@ def getVarName(rawVar):
         sys.exit(32)
 
 
+# syntax/sematic control of variable argument
 def verifyVar(arg, instructOrderNum):
     if arg.attrib.get("type") != "var":
         sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
@@ -333,6 +360,7 @@ def verifyVar(arg, instructOrderNum):
         getVarName(arg.text)
 
 
+# checks proper type of argument
 def verifyType(arg, instructOrderNum):
     if arg.attrib.get("type") != "type":
         sys.stderr.write("ERROR 32: instruction number: {} has wrong argum"
@@ -347,6 +375,7 @@ def verifyType(arg, instructOrderNum):
         sys.exit(32)
 
 
+# meh...
 def verifyString(str):
     pass
 
@@ -379,7 +408,8 @@ def boolToStr(bool):
         return "false"
 
 
-def verifySymb(arg, instructOrderNum):  # DONE
+# syntax/semantic verification of symb argument
+def verifySymb(arg, instructOrderNum):
     argType = arg.attrib.get("type")
     if argType == "var":
         getVarFrame(arg.text)
@@ -397,6 +427,9 @@ def verifySymb(arg, instructOrderNum):  # DONE
         sys.exit(32)
 
 
+# get value of varible with name "name" from frame "frame"
+# first arg: name of frame in string format (GF/TF/LF)
+# second arg: name of variable in string format
 def getVarValue(frame, name):
     if frame == "GF":
         global GF
@@ -457,6 +490,9 @@ def getVarValue(frame, name):
     return value
 
 
+# get type of varible with name "name" from frame "frame"
+# first arg: name of frame in string format (GF/TF/LF)
+# second arg: name of variable in string format
 def getVarType(frame, name):
     if frame == "GF":
         global GF
@@ -1619,7 +1655,7 @@ def statsDump(args):
 
 
 def main():
-    args = argumentsHadling()  # parsing of arguments
+    args = argumentsHandling()  # parsing of arguments
     fileName = ''.join(args.source)  # load source file name
     file = openFile(fileName)  # open file
     program = parseFile(file).getroot()  # get root from XML file
@@ -1634,7 +1670,7 @@ def main():
 
     # interpretation
     nextInstructionNumber = 1  # start with first instruction
-    instruction = lookUpInstuct(nextInstructionNumber, program)
+    instruction = lookUpInstuct(nextInstructionNumber, program)  # look up instruction in program by its number
     while (instruction is not None):
         nextInstructionNumber = interpretInstruction(instruction)
         instruction = lookUpInstuct(nextInstructionNumber, program)
