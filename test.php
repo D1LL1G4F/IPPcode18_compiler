@@ -6,11 +6,17 @@
   *
   */
 
+  $python = "python3.6 "; // how to run python scripts
+  $php = "php5.6 "; // how to run php scripts
+
+
   $directory = getcwd();
   $recSearch = false;
   $parser = "parse.php";
   $interpreter = "interpret.py";
 
+  /* just glob but functioning recursively
+  */
   function recursiveGlob($folder, $pattern) {
     $dir = new RecursiveDirectoryIterator($folder);
     $ite = new RecursiveIteratorIterator($dir);
@@ -26,37 +32,42 @@
     return substr($sourceCodeName, 0, -4);
   }
 
+  /* execute interpretation and return output files and load return codes
+  * to global $returnCodes variable
+  */
   function generateOutputFiles($sources) {
     global $parser;
     global $interpreter;
     global $returnCodes;
     global $directory;
     global $inputFiles;
+
+    global $php;
+    global $python;
     $outputs = array();
 
     foreach ($sources as $source) {
-      $outFile = fopen(getTestName($source) . "My.out","w");
       $output = NULL;
       $rc = NULL;
-      exec("php " . $parser . " < " . $source, $output, $rc); // TODO merlin
+      $outputFileName = getTestName($source) . "My.out";
+      exec($php . $parser . " < " . $source, $output, $rc); // TODO merlin
       if ($rc == 0) {
         $tmpFileName = tempnam($directory, "tmpXML");
         $XML = fopen($tmpFileName, "w");
         fwrite($XML, implode("\n", $output));
-        $output = array();
-        exec("python3.6 " . $interpreter . " --source=" . $tmpFileName . " < " . $inputFiles[$source] . " 2> " . getTestName($source) . ".err" , $output, $rc);
+        exec($python . $interpreter . " --source=" . $tmpFileName . " < " . $inputFiles[$source] . " > " . $outputFileName ." 2> " . getTestName($source) . ".err" , $output, $rc);
         fclose($XML);
         unlink($tmpFileName);
-        fwrite($outFile, implode("\n", $output)."\n");
       }
-      fclose($outFile);
 
       $returnCodes = array_merge($returnCodes, array($source => $rc));
-      $outputs  = array_merge($outputs, array($source => getTestName($source) . "My.out"));
+      $outputs  = array_merge($outputs, array($source => $outputFileName));
     }
     return $outputs;
   }
 
+  /* get reference output files if doesn't exist create empty one
+  */
   function getRefFiles($sources) {
     $refFiles = array();
     foreach ($sources as $source) {
@@ -69,6 +80,8 @@
     return $refFiles;
   }
 
+  /* get input files if doesn't exist create empty one
+  */
   function getInFiles($sources) {
     $inFiles = array();
     foreach ($sources as $source) {
@@ -81,6 +94,8 @@
     return $inFiles;
   }
 
+  /* get return code files if doesn't exist create one with value 0
+  */
   function getReturnCodes($sources) {
     $rcFile = array();
     foreach ($sources as $source) {
@@ -97,6 +112,8 @@
     return $rcFile;
   }
 
+  /* execute diff of test and return bool indicating success or fail
+  */
   function execTest($test) {
     global $returnCodes;
     global $outputFiles;
@@ -109,6 +126,10 @@
     return (empty($output)) && ($returnCodes[$test] == $referenceReturnCodes[$test]);
   }
 
+  /* add new line to table
+  * arg1: color of lines
+  * arg2: vaulues in line in format [testname , status , rc , expected rc]
+  */
   function createTableLine($color, $attribs) {
     global $HTML;
     $testElem = $HTML->createElement("tr");
@@ -182,6 +203,7 @@
   $recOptionStr = $recSearch ? "yes" : "no";
   /// END OF GETOPTS PARSER ////
 
+  /* HTML template for output */
   $templateHTML =
   "<!DOCTYPE html>
   <html>
@@ -222,39 +244,40 @@
   </body>
   </html>";
 
+  /// MAIN program ///
   $HTML = new domDocument;
-  $HTML->loadHTML($templateHTML);
-  $table = $HTML->getElementsByTagName('table');
-  $body = $HTML->getElementsByTagName('body');
+  $HTML->loadHTML($templateHTML); // load tempalte html
+  $table = $HTML->getElementsByTagName('table'); // get table elem
+  $body = $HTML->getElementsByTagName('body'); // get body elem
 
-  chdir($directory);
+  chdir($directory); // set actual dir
 
   if ($recSearch) {
-    $sources = recursiveGlob(".", "/.*.\.src/");
+    $sources = recursiveGlob(".", "/.*.\.src/"); // load all src files recursively in all dirs
   } else {
-    $sources = glob("*.src"); // TODO
+    $sources = glob("*.src"); // load all src files from actual directory
   }
 
-  $returnCodes = array();
-  $inputFiles = getInFiles($sources);
-  $outputFiles = generateOutputFiles($sources);
-  $referenceFiles = getRefFiles($sources);
-  $referenceReturnCodes = getReturnCodes($sources);
-  $total = 0;
-  $success = 0;
+  $returnCodes = array(); // array for return codes
+  $inputFiles = getInFiles($sources); // get all input files based on sources (if doesn't exist create empty one)
+  $outputFiles = generateOutputFiles($sources); // interprete all tests and generate outputs and return codes
+  $referenceFiles = getRefFiles($sources); // get all reference outputs (if doesn't exist create empty one)
+  $referenceReturnCodes = getReturnCodes($sources); // get all reference return codes (if doesn't exists create one with value 0)
+  $total = 0; // variable for total number of tests
+  $success = 0; // variable for total number of successfull tests
 
-  foreach ($sources as $test) {
+  foreach ($sources as $test) { // generate table for results
     $total++;
     $testElem = $HTML->createElement("tr");
-    $testResult = execTest($test);
+    $testResult = execTest($test); // execute diff of reference results and actual results
     $color = $testResult ? "green" : "red";
     $success += $testResult ? 1 : 0;
     $attribs = [getTestName($test), $testResult ? "OK" : "FAILED", $returnCodes[$test], $referenceReturnCodes[$test]];
-    $table[0]->appendChild(createTableLine($color, $attribs));
+    $table[0]->appendChild(createTableLine($color, $attribs)); // add test to table
   }
-  if ($total > 0) {
+  if ($total > 0) { // provide success precentage
     $percentage = ($success / $total)*100;
-  } else {
+  } else { // zero division avoidance
     $percentage = 0;
   }
 
@@ -262,10 +285,13 @@
   $succ = $HTML->createElement("p", "successfull tests: " . (string)$success . "/" . (string)$total);
   $perc = $HTML->createElement("p", "percentage: " . (string)$percentage . "%");
 
+
+  // append everything to body
   $body[0]->appendChild($stats);
   $body[0]->appendChild($succ);
   $body[0]->appendChild($perc);
 
-  echo $HTML->saveHTML();
+  echo $HTML->saveHTML(); // output in HTML format
   return 0;
+  ///////////////
  ?>
