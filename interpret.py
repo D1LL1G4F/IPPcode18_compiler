@@ -1636,6 +1636,7 @@ def verifyInstruct(instruct):
 
 
 # runtime interpretation
+# returns number of next instruction
 def interpretInstruction(instruction):
     opcode = instruction.attrib.get("opcode")
     return opcodeParser[opcode](instruction, True)  # call parsing function with interpretation
