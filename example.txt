@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<program>
-  <instruction order="1..n" opcode="OPCODE">
-    <arg1 type="int, bool, string, label, type, var">...</arg1>
-    <arg2 type="int, bool, string, label, type, var">...</arg2>
-  </instruction>
-</program>
